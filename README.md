@@ -8,6 +8,8 @@
 
 **Control Unreal Engine 5.5+ through natural language using the Model Context Protocol (MCP). Build complex 3D worlds, physics simulations, and architectural structures with AI-powered commands.**
 
+> **Active Development**: This project is under very active development with consistent updates, new features, and improvements being added regularly. Join our [Discord](https://discord.gg/3KNkke3rnH) to stay updated on the latest releases!
+
 <!-- ---
 
 ## 🎯 Why This Is The Most Advanced MCP Server
@@ -34,28 +36,28 @@ Check out these examples of the MCP server in action on our channel:
 
 ## ⭐ Featured Capabilities
 
-### 🏘️ Procedural Architecture
+### Procedural Architecture
 ```bash
 # Create an entire realistic town with roads, buildings, and infrastructure
 > "Build a medium-sized town with mixed architectural styles"
 → create_town(town_size="medium", architectural_style="mixed", building_density=0.8)
 ```
 
-### 🏰 Advanced Structures  
+### Advanced Structures  
 ```bash
 # Build complex multi-room houses with windows, doors, and roofs
 > "Create a Victorian mansion with 3 floors and a chimney"
 → construct_house(house_style="mansion", width=1500, height=900)
 ```
 
-### 🧩 Intelligent Mazes
+### Intelligent Mazes
 ```bash
 # Generate solvable mazes with guaranteed paths using recursive backtracking
 > "Make a 15x15 maze with high walls"
 → create_maze(rows=15, cols=15, wall_height=4, cell_size=250)
 ```
 
-### ⚛️ Physics Simulations
+### Physics Simulations
 ```bash
 # Create physics objects with custom properties
 > "Spawn a heavy bouncing ball that falls from above"  
@@ -68,11 +70,11 @@ Check out these examples of the MCP server in action on our channel:
 
 | **Category** | **Tools** | **Description** |
 |--------------|-----------|-----------------|
-| **🏗️ World Building** | `create_town`, `construct_house`, `create_tower`, `create_arch` | Build complex architectural structures and entire settlements |
-| **🧩 Level Design** | `create_maze`, `create_obstacle_course`, `create_pyramid`, `create_wall` | Design challenging game levels and puzzles |
-| **⚛️ Physics & Materials** | `spawn_physics_actor`, `create_bouncy_ball`, `set_physics_properties` | Create realistic physics simulations |
-| **🎨 Blueprint System** | `create_blueprint`, `compile_blueprint`, `add_component_to_blueprint` | Visual scripting and custom actor creation |
-| **🎯 Actor Management** | `spawn_actor`, `delete_actor`, `set_actor_transform`, `find_actors_by_name` | Precise control over scene objects |
+| **World Building** | `create_town`, `construct_house`, `create_tower`, `create_arch` | Build complex architectural structures and entire settlements |
+| **Level Design** | `create_maze`, `create_obstacle_course`, `create_pyramid`, `create_wall` | Design challenging game levels and puzzles |
+| **Physics & Materials** | `spawn_physics_actor`, `create_bouncy_ball`, `set_physics_properties` | Create realistic physics simulations |
+| **Blueprint System** | `create_blueprint`, `compile_blueprint`, `add_component_to_blueprint` | Visual scripting and custom actor creation |
+| **Actor Management** | `spawn_actor`, `delete_actor`, `set_actor_transform`, `find_actors_by_name` | Precise control over scene objects |
 ---
 
 ## ⚡ Lightning-Fast Setup
@@ -82,7 +84,7 @@ Check out these examples of the MCP server in action on our channel:
 - **Python 3.12+**
 - **MCP Client** (Claude Desktop, Cursor, or Windsurf)
 
-### 🎮 1. Setup the Plugin
+### 1. Setup the Plugin
 
 **Add to Your Unreal Engine Project**
 ```bash
@@ -102,14 +104,14 @@ cp -r UnrealMCP/ "C:/Program Files/Epic Games/UE_5.5/Engine/Plugins/"
 Edit → Plugins → Search "UnrealMCP" → Enable
 ```
 
-### 🐍 2. Launch the MCP Server
+### 2. Launch the MCP Server
 
 ```bash
 cd Python
 uv run unreal_mcp_server_advanced.py
 ```
 
-### 🤖 3. Configure Your AI Client
+### 3. Configure Your AI Client
 
 Add this to your MCP configuration:
 
@@ -168,7 +170,7 @@ graph TB
 
 ---
 
-## 📚 Examples & Guides
+## Examples & Guides
 
 ### Quick Examples
 ```bash
@@ -196,15 +198,15 @@ graph TB
 ## 🌟 What Makes This Special
 
 
-**🧠 AI-First Design**: Every tool designed specifically for natural language control by AI agents
+**AI-First Design**: Every tool designed specifically for natural language control by AI agents
 
-**🔄 Real-Time Feedback**: Immediate visual results in Unreal Editor as you build
+**Real-Time Feedback**: Immediate visual results in Unreal Editor as you build
 
-**📈 Scalable**: From single objects to complete environments - no limits on complexity
+**Scalable**: From single objects to complete environments - no limits on complexity
 
-**🎮 Game-Engine Native**: Full access to Unreal's rendering, physics, and material systems
+**Game-Engine Native**: Full access to Unreal's rendering, physics, and material systems
 
-**🔧 Extensible**: Add your own tools and extend functionality through the modular architecture
+**Extensible**: Add your own tools and extend functionality through the modular architecture
 
 ---
 
@@ -218,17 +220,12 @@ graph TB
 - **🐦 Twitter/X**: [twitter.com/Flopperam](https://twitter.com/Flopperam) - Latest news and quick updates  
 - **📱 TikTok**: [tiktok.com/@flopperam](https://tiktok.com/@flopperam) - Quick tips and amazing builds
 
-### 💡 Get Help & Share
+### Get Help & Share
 - **Questions?** Ask in our Discord server for real-time support
 - **Bug reports?** Open an issue on GitHub with reproduction steps
-- **Amazing creation?** Share it on social media with #UnrealMCP
 - **Feature ideas?** Join the discussion in our community channels
 
 ---
 
-## 📄 License
+## License
 MIT License - Build amazing things freely.
-
----
-
-*Transform your creative vision into interactive 3D reality through the power of AI and Unreal Engine.*
