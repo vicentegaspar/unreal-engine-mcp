@@ -20,7 +20,6 @@ Check out these examples of the MCP server in action on our channel:
 
 ## Featured Capabilities
 
-### Procedural Architecture```bash
 # Create an entire realistic town with roads, buildings, and infrastructure
 > "Build a medium-sized town with mixed architectural styles"
 → create_town(town_size="medium", architectural_style="mixed", building_density=0.8)
