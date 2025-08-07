@@ -6,7 +6,7 @@
 [![Twitter](https://img.shields.io/badge/X-@Flopperam-1DA1F2.svg?logo=x&logoColor=white)](https://twitter.com/Flopperam)
 [![TikTok](https://img.shields.io/badge/TikTok-@flopperam-000000.svg?logo=tiktok&logoColor=white)](https://tiktok.com/@flopperam)
 
-**Control Unreal Engine 5.5+ through natural language using the Model Context Protocol (MCP). Build complex 3D worlds, physics simulations, and architectural structures with AI-powered commands.**
+**Control Unreal Engine 5.5+ through AI with natural language. Build incredible 3D worlds and architectural masterpieces using MCP. Create entire towns, medieval castles, modern mansions, challenging mazes, and complex structures with AI-powered commands.**
 
 > **Active Development**: This project is under very active development with consistent updates, new features, and improvements being added regularly. Join our [Discord](https://discord.gg/3KNkke3rnH) to stay updated on the latest releases!
 
@@ -73,8 +73,8 @@ Check out these examples of the MCP server in action on our channel:
 **Option A: Use the Pre-Built Project (Recommended for Quick Start)**
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/unreal-mcp.git
-cd unreal-mcp
+git clone https://github.com/flopperam/unreal-engine-mcp.git
+cd unreal-engine-mcp
 
 # Open the pre-configured project
 # Double-click FlopperamUnrealMCP/FlopperamUnrealMCP.uproject
@@ -167,7 +167,7 @@ graph TB
     B -->|TCP Socket| C[C++ Plugin<br/>UnrealMCP]
     C -->|Native API| D[Unreal Engine 5.5+<br/>Editor & Runtime]
     
-    B --> E[21 Advanced Tools]
+    B --> E[Advanced Tools]
     E --> F[World Building]
     E --> G[Physics Simulation]  
     E --> H[Blueprint System]
