@@ -12,13 +12,50 @@ wheels/
 # Virtual environments
 .venv
 
-# Unreal Engine generated files
-Binaries/
-Build/
-DerivedDataCache/
-Intermediate/
-Saved/
-Content/StarterContent/
+# Unreal Engine generated files (project level)
+FlopperamUnrealMCP/Binaries/
+FlopperamUnrealMCP/Build/
+FlopperamUnrealMCP/DerivedDataCache/
+FlopperamUnrealMCP/Intermediate/
+FlopperamUnrealMCP/Saved/
+FlopperamUnrealMCP/.vs/
+FlopperamUnrealMCP/.vsconfig
+
+# Content folder exclusions
+FlopperamUnrealMCP/Content/StarterContent/
+FlopperamUnrealMCP/Content/Developers/
+FlopperamUnrealMCP/Content/Collections/
+
+# Unreal Engine generated files (plugin level)
+FlopperamUnrealMCP/Plugins/UnrealMCP/Binaries/
+FlopperamUnrealMCP/Plugins/UnrealMCP/Intermediate/
+
+# Unreal Engine temporary and cache files
+*.tmp
+*.VC.db
+*.opensdf
+*.opendb
+*.sdf
+*.cachefile
+*.VC.VC.opendb
+
+# Unreal Engine user-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
 
 # Compiled Python files
 __pycache__/
