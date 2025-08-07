@@ -1,4 +1,4 @@
-# 🚀 The Most Advanced MCP Server for Unreal Engine
+# The Most Advanced MCP Server for Unreal Engine
 
 [![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.5%2B-orange.svg)](https://www.unrealengine.com/)
 [![YouTube](https://img.shields.io/badge/YouTube-@flopperam-red.svg?logo=youtube)](https://youtube.com/@flopperam)
@@ -10,22 +10,6 @@
 
 > **Active Development**: This project is under very active development with consistent updates, new features, and improvements being added regularly. Join our [Discord](https://discord.gg/3KNkke3rnH) to stay updated on the latest releases!
 
-<!-- ---
-
-## 🎯 Why This Is The Most Advanced MCP Server
-
-Unlike basic MCP implementations, this server provides **real-time bidirectional control** over a complete 3D engine with:
-
-- **🏗️ Advanced World Building**: Create entire towns, realistic houses, complex mazes, and architectural structures
-- **⚙️ Real-Time Physics**: Spawn physics-enabled objects with custom materials, collision, and dynamics  
-- **🎨 Visual Programming**: Generate and compile Blueprint classes with custom components and logic
-- **🌍 Full Scene Control**: Manage actors, transforms, lighting, and camera systems programmatically
-- **🚀 High Performance**: Native C++ plugin with TCP communication for minimal latency
-
-**21 powerful tools** that can build anything from simple cubes to complete cityscapes.
-
---- -->
-
 ## 🎬 See It In Action
 
 Check out these examples of the MCP server in action on our channel:
@@ -34,10 +18,9 @@ Check out these examples of the MCP server in action on our channel:
 - **[Advanced Maze & Mansion Generation](https://youtube.com/shorts/ArExYGpIZwI)** - Watch Claude generate a playable maze and complete mansion complex with wings, towers, and arches
 - **[Architectural Structures](https://youtube.com/shorts/i6CYbvPTvPs)** - Building detailed structures with AI
 
-## ⭐ Featured Capabilities
+## Featured Capabilities
 
-### Procedural Architecture
-```bash
+### Procedural Architecture```bash
 # Create an entire realistic town with roads, buildings, and infrastructure
 > "Build a medium-sized town with mixed architectural styles"
 → create_town(town_size="medium", architectural_style="mixed", building_density=0.8)
@@ -66,7 +49,7 @@ Check out these examples of the MCP server in action on our channel:
 
 ---
 
-## 🛠️ Complete Tool Arsenal
+## Complete Tool Arsenal
 
 | **Category** | **Tools** | **Description** |
 |--------------|-----------|-----------------|
@@ -75,6 +58,7 @@ Check out these examples of the MCP server in action on our channel:
 | **Physics & Materials** | `spawn_physics_actor`, `create_bouncy_ball`, `set_physics_properties` | Create realistic physics simulations |
 | **Blueprint System** | `create_blueprint`, `compile_blueprint`, `add_component_to_blueprint` | Visual scripting and custom actor creation |
 | **Actor Management** | `spawn_actor`, `delete_actor`, `set_actor_transform`, `find_actors_by_name` | Precise control over scene objects |
+
 ---
 
 ## ⚡ Lightning-Fast Setup
@@ -84,9 +68,22 @@ Check out these examples of the MCP server in action on our channel:
 - **Python 3.12+**
 - **MCP Client** (Claude Desktop, Cursor, or Windsurf)
 
-### 1. Setup the Plugin
+### 1. Setup Options
 
-**Add to Your Unreal Engine Project**
+**Option A: Use the Pre-Built Project (Recommended for Quick Start)**
+```bash
+# Clone the repository
+git clone https://github.com/your-username/unreal-mcp.git
+cd unreal-mcp
+
+# Open the pre-configured project
+# Double-click FlopperamUnrealMCP/FlopperamUnrealMCP.uproject
+# or open it through Unreal Engine launcher
+
+# The plugin is already installed and enabled!
+```
+
+**Option B: Add Plugin to Your Existing Project**
 ```bash
 # Copy the plugin to your project
 cp -r UnrealMCP/ YourProject/Plugins/
@@ -95,7 +92,7 @@ cp -r UnrealMCP/ YourProject/Plugins/
 Edit → Plugins → Search "UnrealMCP" → Enable → Restart Editor
 ```
 
-**Alternative: Install for All Projects**
+**Option C: Install for All Projects**
 ```bash
 # Copy to Engine plugins folder (available to all projects)
 cp -r UnrealMCP/ "C:/Program Files/Epic Games/UE_5.5/Engine/Plugins/"
@@ -135,7 +132,23 @@ Add this to your MCP configuration:
 }
 ```
 
-### 🎉 4. Start Building!
+### Recommended AI Model
+
+**We strongly recommend using Claude for the best experience.**
+
+Claude has proven to be the most effective AI model for:
+- Understanding complex 3D spatial relationships
+- Generating accurate MCP tool calls
+- Following architectural and physics constraints
+- Creating coherent multi-step building processes
+
+### Enhanced Accuracy with Rules
+
+For improved results, especially when creating specific types of objects, provide the AI with our curated rules:
+
+- **`.cursor/rules/`** - Contains specialized guides for different creation tasks
+
+### 4. Start Building!
 
 ```bash
 > "Create a medieval castle with towers and walls"
@@ -146,7 +159,7 @@ Add this to your MCP configuration:
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 graph TB
@@ -164,9 +177,9 @@ graph TB
     C --> K[Material System]
 ```
 
-**🔥 Performance**: Native C++ plugin ensures minimal latency for real-time control
-**🛡️ Reliability**: Robust TCP communication with automatic reconnection
-**🎨 Flexibility**: Full access to Unreal's actor, component, and Blueprint systems
+**Performance**: Native C++ plugin ensures minimal latency for real-time control
+**Reliability**: Robust TCP communication with automatic reconnection
+**Flexibility**: Full access to Unreal's actor, component, and Blueprint systems
 
 ---
 
@@ -195,8 +208,7 @@ graph TB
 
 ---
 
-## 🌟 What Makes This Special
-
+## What Makes This Special
 
 **AI-First Design**: Every tool designed specifically for natural language control by AI agents
 
@@ -210,15 +222,15 @@ graph TB
 
 ---
 
-## 💬 Community & Support
+## Community & Support
 
 **Join our community and get help building amazing worlds!**
 
-### 🌐 Connect With Us
-- **📺 YouTube**: [youtube.com/@flopperam](https://youtube.com/@flopperam) - Tutorials, showcases, and development updates
-- **💬 Discord**: [discord.gg/8yr1RBv](https://discord.gg/3KNkke3rnH) - Get help, share creations, and discuss the plugin
-- **🐦 Twitter/X**: [twitter.com/Flopperam](https://twitter.com/Flopperam) - Latest news and quick updates  
-- **📱 TikTok**: [tiktok.com/@flopperam](https://tiktok.com/@flopperam) - Quick tips and amazing builds
+### Connect With Us
+- **YouTube**: [youtube.com/@flopperam](https://youtube.com/@flopperam) - Tutorials, showcases, and development updates
+- **Discord**: [discord.gg/8yr1RBv](https://discord.gg/3KNkke3rnH) - Get help, share creations, and discuss the plugin
+- **Twitter/X**: [twitter.com/Flopperam](https://twitter.com/Flopperam) - Latest news and quick updates  
+- **TikTok**: [tiktok.com/@flopperam](https://tiktok.com/@flopperam) - Quick tips and amazing builds
 
 ### Get Help & Share
 - **Questions?** Ask in our Discord server for real-time support
