@@ -4146,15 +4146,7 @@ def create_castle_fortress(
             base_name="SouthAnnex"
         )
 
-        # West wall inner face
-        _spawn_annex_row(
-            start_x=location[0] - outer_width/2 + walkway_width + annex_depth/2,
-            end_x=location[0] - outer_width/2 + walkway_width + annex_depth/2,
-            fixed_y=location[1] - outer_depth/2 + spacing,
-            align="west",
-            base_name="WestAnnex"
-        )
-        # vertical run along west: iterate y inside helper by calling multiple times
+        # West wall inner face (vertical placement)
         for y in range(int(location[1] - outer_depth/2 + spacing), int(location[1] + outer_depth/2 - spacing) + 1, spacing):
             res = unreal.send_command("spawn_actor", {
                 "name": f"{name_prefix}_WestAnnex_{y}",
