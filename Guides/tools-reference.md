@@ -165,18 +165,6 @@ Create actors with custom physics properties and materials.
 3. Configures physics properties
 4. Compiles Blueprint and spawns actor
 
-### create_bouncy_ball
-Convenience function for physics-enabled spheres with high bounce.
-
-**Parameters:**
-- `name` (string): Ball actor name
-- `location` (array): Spawn position (default: [0, 0, 0])
-
-**Pre-configured with:**
-- Sphere mesh geometry
-- Low mass for easy movement
-- High restitution for bouncing
-- Physics simulation enabled
 
 ## 🎨 Blueprint System
 
@@ -307,22 +295,6 @@ Modify actor position, rotation, and scale.
 - `location` (array): New world position (optional)
 - `rotation` (array): New rotation in degrees (optional)  
 - `scale` (array): New scale factors (optional)
-
-## 👤 Character Tools
-
-### spawn_mannequin
-Add humanoid character models to scenes.
-
-**Parameters:**
-- `name` (string): Character actor name (default: "Mannequin")
-- `location` (array): Spawn position (default: [0, 0, 0])
-- `rotation` (array): Spawn rotation (default: [0, 0, 0])
-- `mannequin_type` (string): Character variant - "default", "manny", or "quinn"
-
-**Features:**
-- Tries multiple Unreal Engine mannequin asset paths
-- Falls back to basic shapes if character assets unavailable
-- Supports different character types and variations
 
 ---
 

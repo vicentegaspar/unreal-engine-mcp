@@ -36,9 +36,6 @@ Real-world examples showing how natural language requests translate into MCP too
 **Tool Sequence:**
 ```bash
 1. create_pyramid(base_size=4, block_size=100, location=[0, 0, 0])
-2. create_bouncy_ball(name="Ball1", location=[-500, 0, 300])
-3. create_bouncy_ball(name="Ball2", location=[-400, 100, 400]) 
-4. create_bouncy_ball(name="Ball3", location=[-600, -100, 350])
 5. create_wall(length=3, height=1, orientation="x", location=[-700, 0, 0])  # Launch ramp
 ```
 
@@ -51,7 +48,6 @@ Real-world examples showing how natural language requests translate into MCP too
 2. delete_actor("MazeWall_7_14")   # Create second exit
 3. delete_actor("MazeWall_14_7")   # Create third exit  
 4. create_obstacle_course(checkpoints=3, spacing=300, location=[1500, 0, 0])  # Bonus area
-5. spawn_mannequin(name="GuardMannequin", location=[0, 0, 0])  # Maze center guard
 ```
 
 ## 🏙️ Urban Planning
@@ -64,8 +60,6 @@ Real-world examples showing how natural language requests translate into MCP too
 1. create_town(town_size="large", architectural_style="downtown", building_density=0.9, location=[0, 0, 0])
 2. create_tower(height=20, base_size=4, tower_style="square", location=[500, 500, 0])  # Landmark tower
 3. create_tower(height=15, base_size=3, tower_style="square", location=[-400, 600, 0]) # Additional skyscraper
-4. spawn_mannequin(name="Pedestrian1", location=[200, 0, 0])
-5. spawn_mannequin(name="Pedestrian2", location=[-100, 300, 0])
 ```
 
 ### Suburban Neighborhood  
@@ -116,7 +110,6 @@ create_tower(height=15, base_size=5, tower_style="square", location=[200, 200, 0
 # AI 3: Entertainment District
 create_maze(rows=10, cols=10, location=[1000, 0, 0])
 create_obstacle_course(checkpoints=5, spacing=400, location=[1000, 1000, 0])
-spawn_mannequin(name="Performer1", location=[1200, 500, 0])
 ```
 
 ## 🎨 Creative Showcases
@@ -153,8 +146,6 @@ spawn_mannequin(name="Performer1", location=[1200, 500, 0])
 4. create_tower(height=15, base_size=2, tower_style="tapered", location=[200, -200, 0])  # Wizard tower
 5. create_arch(radius=200, segments=8, location=[0, 500, 0])        # Mystical portal
 6. create_maze(rows=6, cols=6, wall_height=2, location=[-600, 0, 0]) # Enchanted hedge maze
-7. spawn_mannequin(name="Wizard", location=[200, -150, 0])
-8. spawn_mannequin(name="Villager1", location=[400, 250, 0])
 ```
 
 ## 🚀 Advanced Techniques
@@ -172,14 +163,12 @@ spawn_mannequin(name="Performer1", location=[1200, 500, 0])
 **Phase 2: Interactive Elements**
 ```bash
 4. create_pyramid(base_size=3, location=[0, 2000, 0])                        # Climbable structure
-5. create_bouncy_ball(name="PuzzleBall", location=[100, 100, 200])           # Physics puzzle
 6. spawn_physics_actor(name="MovableCrate", location=[500, 500, 50])         # Interactive object
 ```
 
 **Phase 3: Characters and Atmosphere**
 ```bash
-7. spawn_mannequin(name="QuestGiver", location=[2000, 100, 0])               # NPC in safe zone
-8. spawn_mannequin(name="Guardian", location=[0, 0, 0])                      # Maze center guardian  
+  
 9. construct_house(house_style="cottage", location=[1800, 200, 0])           # Quest hub building
 ```
 
@@ -238,11 +227,8 @@ spawn_actor(name="Snow2", type="StaticMeshActor", location=[200, 150, 25])
 
 # Thrill Zone
 5. create_pyramid(base_size=5, location=[1000, 0, 0])               # Climbing pyramid  
-6. create_bouncy_ball(name="GiantBall", location=[1200, 0, 300])    # Interactive element
 
 # Character Meet Areas
-7. spawn_mannequin(name="ParkMascot1", location=[0, 500, 0])
-8. spawn_mannequin(name="ParkMascot2", location=[1000, 500, 0])
 ```
 
 ---

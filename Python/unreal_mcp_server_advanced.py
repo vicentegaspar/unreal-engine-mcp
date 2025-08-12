@@ -1085,85 +1085,6 @@ def spawn_physics_actor(
         logger.error(f"spawn_physics_actor error: {e}")
         return {"success": False, "message": str(e)}
 
-@mcp.tool()
-def create_bouncy_ball(
-    name: str,
-    location: List[float] = [0.0, 0.0, 0.0],
-    color: List[float] = [1.0, 0.0, 0.0, 1.0],  # Default red color
-    size: float = 2.0  # Default size multiplier
-) -> Dict[str, Any]:
-    """Convenience function to spawn a bouncing sphere with color and size control."""
-    try:
-        # Create the physics blueprint
-        bp_name = f"{name}_BP"
-        
-        # Create blueprint
-        create_result = create_blueprint(bp_name, "Actor")
-        if not create_result.get("success", False):
-            return {"success": False, "message": f"Failed to create blueprint: {create_result.get('message', 'Unknown error')}"}
-        
-        # Add mesh component
-        add_comp_result = add_component_to_blueprint(bp_name, "StaticMeshComponent", "Mesh")
-        if not add_comp_result.get("success", False):
-            return {"success": False, "message": f"Failed to add component: {add_comp_result.get('message', 'Unknown error')}"}
-        
-        # Set sphere mesh
-        mesh_result = set_static_mesh_properties(bp_name, "Mesh", "/Engine/BasicShapes/Sphere.Sphere")
-        if not mesh_result.get("success", False):
-            return {"success": False, "message": f"Failed to set mesh: {mesh_result.get('message', 'Unknown error')}"}
-        
-        # Set physics properties for bouncing
-        physics_result = set_physics_properties(
-            bp_name, "Mesh", 
-            simulate_physics=True, 
-            gravity_enabled=True, 
-            mass=1.0, 
-            linear_damping=0.1,  # Some damping for realistic bouncing
-            angular_damping=0.1
-        )
-        if not physics_result.get("success", False):
-            return {"success": False, "message": f"Failed to set physics: {physics_result.get('message', 'Unknown error')}"}
-        
-        # Set color using the proven color system
-        color_result = set_mesh_material_color(
-            bp_name, 
-            "Mesh", 
-            color, 
-            material_path="/Engine/BasicShapes/BasicShapeMaterial"
-        )
-        if not color_result.get("success", False):
-            # Don't fail if color setting fails, just warn
-            logger.warning(f"Failed to set color: {color_result.get('message', 'Unknown error')}")
-        
-        # Compile blueprint
-        compile_result = compile_blueprint(bp_name)
-        if not compile_result.get("success", False):
-            return {"success": False, "message": f"Failed to compile blueprint: {compile_result.get('message', 'Unknown error')}"}
-        
-        # Spawn the actor with proper scale
-        spawn_result = spawn_blueprint_actor(bp_name, name, location)
-        if not spawn_result.get("success", False):
-            return {"success": False, "message": f"Failed to spawn actor: {spawn_result.get('message', 'Unknown error')}"}
-        
-        # Get the actual spawned actor name from the response
-        spawned_actor_name = spawn_result.get("result", {}).get("name", name)
-        
-        # Set the scale to make it visible and sized appropriately
-        scale_result = set_actor_transform(spawned_actor_name, scale=[size, size, size])
-        if not scale_result.get("success", False):
-            logger.warning(f"Failed to set scale: {scale_result.get('message', 'Unknown error')}")
-        
-        return {
-            "success": True,
-            "actor": spawn_result.get("actor", {}),
-            "color": color,
-            "size": size,
-            "message": f"Created bouncy ball '{name}' at {location} with color {color} and size {size}"
-        }
-        
-    except Exception as e:
-        logger.error(f"create_bouncy_ball error: {e}")
-        return {"success": False, "message": str(e)}
 
 @mcp.tool()
 def create_maze(
@@ -1303,280 +1224,140 @@ def create_obstacle_course(
         logger.error(f"create_obstacle_course error: {e}")
         return {"success": False, "message": str(e)}
 
-@mcp.prompt()
-def info():
-    """Information about available Unreal MCP Advanced tools and best practices."""
-    return """
-    # Unreal MCP Advanced Server Tools
-    
-    This streamlined server focuses on advanced composition and building tools for Unreal Engine.
-    Total tools: ~25 (enhanced with architectural features + town generation)
-    
-    ## Essential Actor Management
-    - `get_actors_in_level()` - List all actors in current level
-    - `find_actors_by_name(pattern)` - Find actors by name pattern
-    - `spawn_actor(name, type, location, rotation)` - Create basic actors
-    - `delete_actor(name)` - Remove actors
-    - `set_actor_transform(name, location, rotation, scale)` - Modify transforms
-    
-    ## Essential Blueprint Tools (for physics actors)
-    - `create_blueprint(name, parent_class)` - Create Blueprint classes
-    - `add_component_to_blueprint(blueprint_name, component_type, component_name)` - Add components
-    - `set_static_mesh_properties(blueprint_name, component_name, static_mesh)` - Set meshes
-    - `set_physics_properties(blueprint_name, component_name, ...)` - Configure physics
-    - `compile_blueprint(blueprint_name)` - Compile changes
-    - `spawn_blueprint_actor(blueprint_name, actor_name, location)` - Spawn from Blueprint
-    - `set_mesh_material_color(blueprint_name, component_name, color, material_path, parameter_name)` - **NEW** Set colors on mesh components
-    
-    ## Advanced Composition Tools (Enhanced)
-    - `create_pyramid(base_size, block_size, location, name_prefix, mesh)` - Build pyramids
-    - `create_wall(length, height, block_size, location, orientation, name_prefix, mesh)` - Generate walls
-    - `create_tower(height, base_size, block_size, location, name_prefix, mesh, tower_style)` - **ENHANCED** Architectural towers with styles: cylindrical, square, tapered + decorative elements
-    - `create_staircase(steps, step_size, location, name_prefix, mesh)` - Build staircases
-    - `construct_house(width, depth, height, location, name_prefix, mesh, house_style)` - **ENHANCED** Realistic houses with foundations, rooms, windows, doors, pitched roofs, chimneys (styles: modern, cottage, mansion)
-    - `create_arch(radius, segments, location, name_prefix, mesh)` - Arch structures
-    - `spawn_physics_actor(name, mesh_path, location, mass, simulate_physics, gravity_enabled)` - Physics objects
-    - `create_bouncy_ball(name, location)` - Convenience bouncing sphere
-    - `create_maze(rows, cols, cell_size, wall_height, location)` - **ENHANCED** Solvable mazes with recursive backtracking algorithm, entrance/exit markers
-    - `create_obstacle_course(checkpoints, spacing, location)` - Obstacle courses
-    - `spawn_mannequin(name, location, rotation, mannequin_type)` - **NEW** Spawn Unreal mannequins (types: default, manny, quinn) with fallbacks
-    
-    ## Ultimate Town Generation System (NEW!)
-    - `create_town(town_size, building_density, location, name_prefix, include_infrastructure, architectural_style)` - **REVOLUTIONARY** Create complete dynamic towns with full infrastructure
-    
-    ## Enhanced Features
-    
-    ### Town Generation System (`create_town`) - The Crown Jewel
-    This is the most advanced tool in the system, intelligently orchestrating all other tools to create living, breathing towns:
-    
-    **Town Sizes:**
-    - **Small**: 3x3 blocks, ~15 buildings, residential focus
-    - **Medium**: 5x5 blocks, ~35 buildings, mixed residential/commercial
-    - **Large**: 7x7 blocks, ~60 buildings, urban environment
-    - **Metropolis**: 10x10 blocks, ~100 buildings, dense cityscape
-    
-    **Dynamic Features:**
-    - **Smart street grid**: Automatically creates intersecting streets with proper asphalt coloring
-    - **Varied buildings**: Randomly places houses, mansions, towers, and commercial buildings
-    - **Colorful infrastructure**: Street lights with warm lighting, colorful vehicles (red, blue, green, yellow, etc.)
-    - **Living population**: Spawns mannequins throughout the town for realism
-    - **Parks & nature**: Creates green spaces with brown tree trunks and green foliage
-    - **Full randomization**: Every town generation creates unique layouts and building combinations
-    
-    **Building Variety:**
-    - **Houses**: Randomly sized cottages and modern homes in browns/beiges
-    - **Mansions**: Large luxury homes with porches and columns in whites/grays  
-    - **Towers**: Cylindrical, square, or tapered towers in dark grays
-    - **Commercial**: Office/store buildings in light grays
-    
-    **Infrastructure Elements:**
-    - **Gray asphalt streets** in perfect grid pattern
-    - **Street lights** with dark gray poles and warm white lights
-    - **Colorful vehicles** randomly distributed on streets
-    - **Green parks** with brown tree trunks and green spherical foliage
-    - **Population** of varied mannequin types walking around
-    
-    ### Architectural Towers (`create_tower`)
-    - **Cylindrical towers**: Circular arrangement of blocks
-    - **Square towers**: Hollow square towers with proper walls
-    - **Tapered towers**: Towers that narrow toward the top
-    - **Decorative elements**: Corner details added every 3 levels
-    
-    ### Realistic Houses (`construct_house`)
-    - **Foundations**: Proper foundation blocks beneath the house
-    - **Multiple rooms**: Interior walls creating separate spaces
-    - **Windows and doors**: Realistic openings with proper placement
-    - **Flat roofs**: Clean flat roofing with proper overhang
-    - **Chimneys**: Added for cottage and mansion styles
-    - **Style variations**: Modern, cottage, and mansion with different proportions
-    
-    ### Solvable Mazes (`create_maze`)
-    - **Guaranteed solution**: Uses recursive backtracking algorithm
-    - **Entrance marker**: Cylinder marker at maze entrance
-    - **Exit marker**: Sphere marker at maze exit
-    - **Proper pathways**: No closed-off areas, always has solution path
-    
-    ### Mannequin Spawning (`spawn_mannequin`)
-    - **Multiple attempts**: Tries various Unreal Engine mannequin asset paths
-    - **Fallback options**: Falls back to static mesh if skeletal mesh fails
-    - **Primitive fallback**: Creates basic humanoid using primitive shapes if no assets found
-    - **Character types**: Supports manny, quinn, and default variations
-    
-    ### Color System (`set_mesh_material_color`)
-    - **Full RGBA support**: [R, G, B, A] values from 0.0 to 1.0
-    - **Common colors**: Red [1,0,0,1], Blue [0,0,1,1], Green [0,1,0,1], Yellow [1,1,0,1], etc.
-    - **Material compatibility**: Works with Engine/BasicShapes/BasicShapeMaterial
-    - **Parameter flexibility**: Supports BaseColor and Color parameters
-    
-    ## Best Practices
-    
-    ### Town Generation
-    - **Start with create_town()** - This is the ultimate tool that showcases everything
-    - **Experiment with sizes**: Try "small", "medium", "large", "metropolis"
-    - **Adjust density**: Use 0.4-0.8 for realistic spacing, 1.0 for maximum density
-    - **Try architectural styles**: "mixed" for variety, or "modern"/"cottage"/"mansion" for themed towns
-    - **Enable infrastructure**: Always use include_infrastructure=True for complete towns
-    - **Plan space**: Towns can be 3km+ wide (metropolis), ensure adequate space
-    
-    ### Advanced Composition
-    - Use meaningful name_prefix values to organize generated objects
-    - Plan locations to avoid overlapping structures
-    - Consider performance implications of large compositions (metropolis = 500+ actors)
-    - Use appropriate mesh paths for visual variety
-    - Clean up test structures regularly
-    - Take advantage of architectural styles for variety
-    
-    ### Color Usage
-    - Apply colors before spawning for best results
-    - Use realistic color palettes (browns for houses, grays for streets/towers)
-    - Experiment with vibrant colors for vehicles and decorations
-    - Always include alpha channel (1.0 for full opacity)
-    
-    ### Enhanced Features Usage
-    - Try different tower_style values: "cylindrical", "square", "tapered"
-    - Experiment with house_style options: "modern", "cottage", "mansion"
-    - Use larger maze dimensions (8x8 or bigger) for interesting challenges
-    - Place mannequins to populate your scenes with characters
-    
-    ### Physics Objects
-    - Place physics actors above ground level to observe falling
-    - Adjust mass values for realistic behavior
-    - Use create_bouncy_ball for quick physics testing
-    - Compile Blueprints after physics property changes
-    
-    ### Error Handling
-    - Check command responses for success status
-    - Use unique names to avoid conflicts
-    - Validate parameters before complex operations
-    - Handle Unreal Engine connection issues gracefully
-    
-    ### Performance Tips
-    - Group related operations together
-    - Use batched creation for large structures
-    - Consider LOD implications for many objects (metropolis towns create 500+ actors)
-    - Clean up temporary Blueprints when done
-    - Be mindful of complex structures like detailed houses and large towns
-    - Test with smaller towns first, then scale up to metropolis
-    
-    ## Quick Start Examples
-    
-    ### Create Your First Town
-    ```
-    create_town(town_size="medium", building_density=0.7, location=[0, 0, 0])
-    ```
-    
-    ### Create a Large Mixed-Style Town
-    ```
-    create_town(town_size="large", building_density=0.8, architectural_style="mixed", include_infrastructure=True)
-    ```
-    
-    ### Create a Mansion District
-    ```
-    create_town(town_size="small", building_density=0.5, architectural_style="mansion")
-    ```
-    """
 
 @mcp.tool()
-def spawn_mannequin(
-    name: str = "Mannequin",
-    location: List[float] = [0.0, 0.0, 0.0],
-    rotation: List[float] = [0.0, 0.0, 0.0],
-    mannequin_type: str = "default"  # "default", "manny", "quinn"
+def configure_blueprint(
+    blueprint_name: str,
+    components: List[Dict[str, Any]],
+    compile_at_end: bool = True
 ) -> Dict[str, Any]:
-    """Spawn an Unreal Engine mannequin character at the specified location."""
-    try:
-        unreal = get_unreal_connection()
-        if not unreal:
-            return {"success": False, "message": "Failed to connect to Unreal Engine"}
-        
-        # Determine which mannequin mesh to use
-        mesh_path = "/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple"
-        if mannequin_type.lower() == "manny":
-            mesh_path = "/Game/Characters/Mannequins/Meshes/SKM_Manny_Simple"
-        elif mannequin_type.lower() == "quinn":
-            mesh_path = "/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple"
-        
-        # Try common Unreal Engine mannequin paths
-        possible_paths = [
-            mesh_path,
-            "/Game/Characters/Mannequins/Meshes/SKM_Quinn",
-            "/Game/Characters/Mannequins/Meshes/SKM_Manny", 
-            "/Engine/Characters/Mannequins/Meshes/SKM_Quinn",
-            "/Engine/Characters/Mannequins/Meshes/SKM_Manny",
-            "/Game/ThirdPerson/Characters/Mannequins/Meshes/SKM_Quinn_Simple",
-            "/Game/ThirdPerson/Characters/Mannequins/Meshes/SKM_Manny_Simple"
-        ]
-        
-        # Skip trying SkeletalMeshActor since it's not supported, go directly to StaticMeshActor
-        logger.info("Trying to spawn mannequin as static mesh actor...")
-        
-        for mesh_path in possible_paths:
-            params = {
-                "name": f"{name}_{mannequin_type}_Static",
-                "type": "StaticMeshActor", 
-                "location": location,
-                "rotation": rotation,
-                "static_mesh": mesh_path
-            }
-            
-            resp = unreal.send_command("spawn_actor", params)
-            # Check for proper response format from Unreal
-            if resp and resp.get("success") == True:
-                return {
-                    "success": True,
-                    "actor": resp,
-                    "mannequin_type": mannequin_type,
-                    "mesh_used": mesh_path,
-                    "message": f"Spawned {mannequin_type} mannequin as static mesh at {location}"
-                }
-            # If we get "Actor already exists" error, return early - don't try to create primitive humanoid
-            elif resp and resp.get("success") == False and "already exists" in resp.get("message", ""):
-                logger.warning(f"Actor {name}_{mannequin_type}_Static already exists, skipping...")
-                return {
-                    "success": True,  # This should be success since the actor already exists
-                    "message": f"Mannequin {name}_{mannequin_type}_Static already exists"
-                }
-        
-        # Final fallback: spawn a basic humanoid shape
-        logger.info("Mannequin meshes not found, creating basic humanoid figure...")
-        
-        # Create basic humanoid using primitive shapes
-        body_parts = []
-        
-        # Try to create each body part, but don't fail if some already exist
-        parts_to_create = [
-            (f"{name}_Body", [location[0], location[1], location[2] + 150], [0.8, 0.4, 1.5], "/Engine/BasicShapes/Cube.Cube"),
-            (f"{name}_Head", [location[0], location[1], location[2] + 275], [0.5, 0.5, 0.5], "/Engine/BasicShapes/Sphere.Sphere"),
-            (f"{name}_Arm_Left", [location[0], location[1] - 60, location[2] + 150], [0.3, 0.3, 1.2], "/Engine/BasicShapes/Cylinder.Cylinder"),
-            (f"{name}_Arm_Right", [location[0], location[1] + 60, location[2] + 150], [0.3, 0.3, 1.2], "/Engine/BasicShapes/Cylinder.Cylinder"),
-            (f"{name}_Leg_Left", [location[0], location[1] - 30, location[2] + 25], [0.3, 0.3, 1.0], "/Engine/BasicShapes/Cylinder.Cylinder"),
-            (f"{name}_Leg_Right", [location[0], location[1] + 30, location[2] + 25], [0.3, 0.3, 1.0], "/Engine/BasicShapes/Cylinder.Cylinder")
-        ]
-        
-        for part_name, part_location, part_scale, mesh_path in parts_to_create:
-            part_resp = unreal.send_command("spawn_actor", {
-                "name": part_name,
-                "type": "StaticMeshActor",
-                "location": part_location,
-                "scale": part_scale,
-                "static_mesh": mesh_path
-            })
-            if part_resp and part_resp.get("success") == True:
-                body_parts.append(part_resp)
-            elif part_resp and part_resp.get("success") == False and "already exists" in part_resp.get("message", ""):
-                logger.info(f"Body part {part_name} already exists, skipping...")
-        
-        return {
-            "success": True,
-            "actors": body_parts,
-            "mannequin_type": "primitive_humanoid",
-            "message": f"Created basic humanoid figure at {location} using primitive shapes"
-        }
-        
-    except Exception as e:
-        logger.error(f"spawn_mannequin error: {e}")
-        return {"success": False, "message": str(e)}
+    """Configure a Blueprint in one call and optionally compile at the end.
 
+    This function attaches components, applies transforms, sets meshes and colors,
+    then compiles the Blueprint when finished. It eliminates the need to call
+    multiple functions for common setup flows.
+
+    Each item in the `components` list can include:
+    - component_type: e.g. "StaticMeshComponent" (required)
+    - component_name: unique name for the component (required)
+    - location: [x, y, z]
+    - rotation: [pitch, yaw, roll]
+    - scale: [sx, sy, sz]
+    - component_properties: dict of additional properties for `add_component_to_blueprint`
+    - static_mesh: asset path to assign to the component's mesh
+    - color: [r, g, b, a] where values are 0..1, applied to BaseColor/Color
+    - material_path: optional material to apply when setting color
+    - parameter_name: optional material parameter name to prioritize (default BaseColor)
+    """
+    unreal = get_unreal_connection()
+    if not unreal:
+        return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+    overall_success = True
+    component_results: List[Dict[str, Any]] = []
+
+    for component in components or []:
+        result: Dict[str, Any] = {
+            "component_name": component.get("component_name"),
+            "component_type": component.get("component_type"),
+            "steps": {}
+        }
+        try:
+            # 1) Attach/add the component
+            add_params = {
+                "blueprint_name": blueprint_name,
+                "component_type": component.get("component_type"),
+                "component_name": component.get("component_name"),
+                "location": component.get("location", []),
+                "rotation": component.get("rotation", []),
+                "scale": component.get("scale", []),
+                "component_properties": component.get("component_properties", {})
+            }
+            add_resp = unreal.send_command("add_component_to_blueprint", add_params)
+            result["steps"]["add_component_to_blueprint"] = add_resp
+            if not (add_resp and add_resp.get("success")):
+                overall_success = False
+
+            # 2) Assign static mesh if provided
+            if component.get("static_mesh"):
+                mesh_resp = unreal.send_command(
+                    "set_static_mesh_properties",
+                    {
+                        "blueprint_name": blueprint_name,
+                        "component_name": component.get("component_name"),
+                        "static_mesh": component.get("static_mesh")
+                    }
+                )
+                result["steps"]["set_static_mesh_properties"] = mesh_resp
+                if not (mesh_resp and mesh_resp.get("success")):
+                    overall_success = False
+
+            # 3) Apply color if provided
+            if component.get("color") is not None:
+                color_list = component.get("color")
+                is_color_valid = False
+                error_message = ""
+                processed_color = []
+
+                if isinstance(color_list, list) and (len(color_list) in [3, 4]):
+                    try:
+                        # Clamp color values to [0,1] and validate numeric types
+                        processed_color = [float(min(1.0, max(0.0, v))) for v in color_list]
+                        is_color_valid = True
+                    except (ValueError, TypeError) as e:
+                        error_message = f"Invalid color value: {e}. Color must be a list of numbers."
+                else:
+                    error_message = "Color must be a list of 3 or 4 numbers (RGB/RGBA)."
+
+                if is_color_valid:
+                    color_params = {
+                        "blueprint_name": blueprint_name,
+                        "component_name": component.get("component_name"),
+                        "color": processed_color,
+                        "material_path": component.get("material_path"),
+                        "parameter_name": component.get("parameter_name")
+                    }
+                    if color_params["material_path"] is None:
+                        del color_params["material_path"]
+                    if color_params["parameter_name"] is None:
+                        del color_params["parameter_name"]
+
+                    color_resp = set_mesh_material_color(**color_params)
+                    result["steps"]["set_mesh_material_color"] = color_resp
+                    if not (color_resp and color_resp.get("success")):
+                        overall_success = False
+                else:
+                    # Add a failure step to the result
+                    result["steps"]["set_mesh_material_color"] = {
+                        "success": False,
+                        "error": error_message,
+                        "component_name": component.get("component_name")
+                    }
+                    overall_success = False
+
+        except Exception as inner_e:
+            result["error"] = str(inner_e)
+            overall_success = False
+
+        component_results.append(result)
+
+    compile_result: Dict[str, Any] = {}
+    if compile_at_end:
+        try:
+            compile_result = unreal.send_command("compile_blueprint", {"blueprint_name": blueprint_name}) or {}
+            if not compile_result.get("success"):
+                overall_success = False
+        except Exception as e:
+            compile_result = {"success": False, "message": str(e)}
+            overall_success = False
+
+    return {
+        "success": overall_success,
+        "blueprint_name": blueprint_name,
+        "components": component_results,
+        "compile_result": compile_result
+    }
+    
 # Missing Material Color Function
 @mcp.tool()
 def set_mesh_material_color(
@@ -1746,10 +1527,6 @@ def create_town(
             all_spawned.extend(decoration_results.get("actors", []))
             infrastructure_count += len(decoration_results.get("actors", []))
             
-            # Mannequins for population
-            population_results = _create_town_population(blocks, block_size, location, name_prefix, target_population // 4)
-            all_spawned.extend(population_results.get("actors", []))
-            infrastructure_count += len(population_results.get("actors", []))
             
             # Add advanced infrastructure
             logger.info("Adding advanced infrastructure...")
@@ -2150,43 +1927,6 @@ def _create_town_decorations(blocks: int, block_size: float, location: List[floa
         logger.error(f"_create_town_decorations error: {e}")
         return {"success": False, "actors": []}
 
-def _create_town_population(blocks: int, block_size: float, location: List[float], name_prefix: str, population_count: int) -> Dict[str, Any]:
-    """Create mannequins to populate the town."""
-    try:
-        import random
-        population = []
-        
-        mannequin_types = ["default", "manny", "quinn"]
-        
-        for i in range(population_count):
-            # Random position throughout town
-            person_x = location[0] + random.uniform(-blocks*block_size/2, blocks*block_size/2) 
-            person_y = location[1] + random.uniform(-blocks*block_size/2, blocks*block_size/2)
-            person_rotation = [0, 0, random.uniform(0, 360)]
-            
-            mannequin_type = random.choice(mannequin_types)
-            
-            result = spawn_mannequin(
-                name=f"{name_prefix}_Person_{i}",
-                location=[person_x, person_y, location[2] + 5],
-                rotation=person_rotation,
-                mannequin_type=mannequin_type
-            )
-            
-            # Only add to population if successful, but continue loop either way
-            if result.get("success", False):
-                if "actors" in result:
-                    population.extend(result["actors"])
-                elif "actor" in result:
-                    population.append(result["actor"])
-            else:
-                logger.info(f"Skipping person {i}: {result.get('message', 'Unknown error')}")
-        
-        return {"success": True, "actors": population}
-        
-    except Exception as e:
-        logger.error(f"_create_town_population error: {e}")
-        return {"success": False, "actors": []}
 
 # New building creation functions for impressive structures
 def _create_skyscraper(height: int, base_width: float, base_depth: float, location: List[float], name_prefix: str) -> Dict[str, Any]:
