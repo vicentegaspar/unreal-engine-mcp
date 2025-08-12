@@ -1085,85 +1085,6 @@ def spawn_physics_actor(
         logger.error(f"spawn_physics_actor error: {e}")
         return {"success": False, "message": str(e)}
 
-@mcp.tool()
-def create_bouncy_ball(
-    name: str,
-    location: List[float] = [0.0, 0.0, 0.0],
-    color: List[float] = [1.0, 0.0, 0.0, 1.0],  # Default red color
-    size: float = 2.0  # Default size multiplier
-) -> Dict[str, Any]:
-    """Convenience function to spawn a bouncing sphere with color and size control."""
-    try:
-        # Create the physics blueprint
-        bp_name = f"{name}_BP"
-        
-        # Create blueprint
-        create_result = create_blueprint(bp_name, "Actor")
-        if not create_result.get("success", False):
-            return {"success": False, "message": f"Failed to create blueprint: {create_result.get('message', 'Unknown error')}"}
-        
-        # Add mesh component
-        add_comp_result = add_component_to_blueprint(bp_name, "StaticMeshComponent", "Mesh")
-        if not add_comp_result.get("success", False):
-            return {"success": False, "message": f"Failed to add component: {add_comp_result.get('message', 'Unknown error')}"}
-        
-        # Set sphere mesh
-        mesh_result = set_static_mesh_properties(bp_name, "Mesh", "/Engine/BasicShapes/Sphere.Sphere")
-        if not mesh_result.get("success", False):
-            return {"success": False, "message": f"Failed to set mesh: {mesh_result.get('message', 'Unknown error')}"}
-        
-        # Set physics properties for bouncing
-        physics_result = set_physics_properties(
-            bp_name, "Mesh", 
-            simulate_physics=True, 
-            gravity_enabled=True, 
-            mass=1.0, 
-            linear_damping=0.1,  # Some damping for realistic bouncing
-            angular_damping=0.1
-        )
-        if not physics_result.get("success", False):
-            return {"success": False, "message": f"Failed to set physics: {physics_result.get('message', 'Unknown error')}"}
-        
-        # Set color using the proven color system
-        color_result = set_mesh_material_color(
-            bp_name, 
-            "Mesh", 
-            color, 
-            material_path="/Engine/BasicShapes/BasicShapeMaterial"
-        )
-        if not color_result.get("success", False):
-            # Don't fail if color setting fails, just warn
-            logger.warning(f"Failed to set color: {color_result.get('message', 'Unknown error')}")
-        
-        # Compile blueprint
-        compile_result = compile_blueprint(bp_name)
-        if not compile_result.get("success", False):
-            return {"success": False, "message": f"Failed to compile blueprint: {compile_result.get('message', 'Unknown error')}"}
-        
-        # Spawn the actor with proper scale
-        spawn_result = spawn_blueprint_actor(bp_name, name, location)
-        if not spawn_result.get("success", False):
-            return {"success": False, "message": f"Failed to spawn actor: {spawn_result.get('message', 'Unknown error')}"}
-        
-        # Get the actual spawned actor name from the response
-        spawned_actor_name = spawn_result.get("result", {}).get("name", name)
-        
-        # Set the scale to make it visible and sized appropriately
-        scale_result = set_actor_transform(spawned_actor_name, scale=[size, size, size])
-        if not scale_result.get("success", False):
-            logger.warning(f"Failed to set scale: {scale_result.get('message', 'Unknown error')}")
-        
-        return {
-            "success": True,
-            "actor": spawn_result.get("actor", {}),
-            "color": color,
-            "size": size,
-            "message": f"Created bouncy ball '{name}' at {location} with color {color} and size {size}"
-        }
-        
-    except Exception as e:
-        logger.error(f"create_bouncy_ball error: {e}")
-        return {"success": False, "message": str(e)}
 
 @mcp.tool()
 def create_maze(
@@ -1374,44 +1295,44 @@ def configure_blueprint(
             # 3) Apply color if provided
             if component.get("color") is not None:
                 color_list = component.get("color")
-                try:
-                    # Clamp color values to [0,1]
-                    color_list = [float(min(1.0, max(0.0, v))) for v in color_list]
-                except Exception:
-                    pass
+                is_color_valid = False
+                error_message = ""
+                processed_color = []
 
-                material_path = component.get(
-                    "material_path",
-                    "/Engine/BasicShapes/BasicShapeMaterial"
-                )
-                preferred_param = component.get("parameter_name", "BaseColor")
+                if isinstance(color_list, list) and (len(color_list) in [3, 4]):
+                    try:
+                        # Clamp color values to [0,1] and validate numeric types
+                        processed_color = [float(min(1.0, max(0.0, v))) for v in color_list]
+                        is_color_valid = True
+                    except (ValueError, TypeError) as e:
+                        error_message = f"Invalid color value: {e}. Color must be a list of numbers."
+                else:
+                    error_message = "Color must be a list of 3 or 4 numbers (RGB/RGBA)."
 
-                # Try preferred parameter first, then a fallback to "Color"
-                base_resp = unreal.send_command(
-                    "set_mesh_material_color",
-                    {
+                if is_color_valid:
+                    color_params = {
                         "blueprint_name": blueprint_name,
                         "component_name": component.get("component_name"),
-                        "color": color_list,
-                        "material_path": material_path,
-                        "parameter_name": preferred_param
+                        "color": processed_color,
+                        "material_path": component.get("material_path"),
+                        "parameter_name": component.get("parameter_name")
                     }
-                )
-                color_resp = unreal.send_command(
-                    "set_mesh_material_color",
-                    {
-                        "blueprint_name": blueprint_name,
-                        "component_name": component.get("component_name"),
-                        "color": color_list,
-                        "material_path": material_path,
-                        "parameter_name": "Color"
+                    if color_params["material_path"] is None:
+                        del color_params["material_path"]
+                    if color_params["parameter_name"] is None:
+                        del color_params["parameter_name"]
+
+                    color_resp = set_mesh_material_color(**color_params)
+                    result["steps"]["set_mesh_material_color"] = color_resp
+                    if not (color_resp and color_resp.get("success")):
+                        overall_success = False
+                else:
+                    # Add a failure step to the result
+                    result["steps"]["set_mesh_material_color"] = {
+                        "success": False,
+                        "error": error_message,
+                        "component_name": component.get("component_name")
                     }
-                )
-                result["steps"]["set_mesh_material_color"] = {
-                    "preferred": base_resp,
-                    "fallback": color_resp
-                }
-                if not ((base_resp and base_resp.get("success")) or (color_resp and color_resp.get("success"))):
                     overall_success = False
 
         except Exception as inner_e:

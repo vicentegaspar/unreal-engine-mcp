@@ -165,18 +165,6 @@ Create actors with custom physics properties and materials.
 3. Configures physics properties
 4. Compiles Blueprint and spawns actor
 
-### create_bouncy_ball
-Convenience function for physics-enabled spheres with high bounce.
-
-**Parameters:**
-- `name` (string): Ball actor name
-- `location` (array): Spawn position (default: [0, 0, 0])
-
-**Pre-configured with:**
-- Sphere mesh geometry
-- Low mass for easy movement
-- High restitution for bouncing
-- Physics simulation enabled
 
 ## 🎨 Blueprint System
 

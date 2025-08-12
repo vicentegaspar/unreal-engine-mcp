@@ -36,9 +36,6 @@ Real-world examples showing how natural language requests translate into MCP too
 **Tool Sequence:**
 ```bash
 1. create_pyramid(base_size=4, block_size=100, location=[0, 0, 0])
-2. create_bouncy_ball(name="Ball1", location=[-500, 0, 300])
-3. create_bouncy_ball(name="Ball2", location=[-400, 100, 400]) 
-4. create_bouncy_ball(name="Ball3", location=[-600, -100, 350])
 5. create_wall(length=3, height=1, orientation="x", location=[-700, 0, 0])  # Launch ramp
 ```
 
@@ -166,7 +163,6 @@ create_obstacle_course(checkpoints=5, spacing=400, location=[1000, 1000, 0])
 **Phase 2: Interactive Elements**
 ```bash
 4. create_pyramid(base_size=3, location=[0, 2000, 0])                        # Climbable structure
-5. create_bouncy_ball(name="PuzzleBall", location=[100, 100, 200])           # Physics puzzle
 6. spawn_physics_actor(name="MovableCrate", location=[500, 500, 50])         # Interactive object
 ```
 
@@ -231,7 +227,6 @@ spawn_actor(name="Snow2", type="StaticMeshActor", location=[200, 150, 25])
 
 # Thrill Zone
 5. create_pyramid(base_size=5, location=[1000, 0, 0])               # Climbing pyramid  
-6. create_bouncy_ball(name="GiantBall", location=[1200, 0, 300])    # Interactive element
 
 # Character Meet Areas
 ```

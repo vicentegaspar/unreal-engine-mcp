@@ -4,10 +4,10 @@ alwaysApply: false
 ---
 # Unreal MCP Shapes and Physics Objects Guide
 
-## Key Lessons for Creating Bouncy Balls and Colored Shapes
+## Key Lessons for Creating Colored Shapes and Physics Objects
 
 ### Critical Issues to Avoid
-1. **Scale/Size Problems**: The `create_bouncy_ball` function had a bug where it used the user-provided name instead of the actual spawned actor name when setting scale. Always use the actual spawned actor name returned from `spawn_blueprint_actor`.
+1. **Scale/Size Problems**: Always use the actual spawned actor name returned from `spawn_blueprint_actor` when setting scale.
 
 2. **Blueprint Name Conflicts**: Blueprint names must be unique. If creation fails with "Blueprint already exists", use a more specific/unique name.
 
@@ -15,18 +15,7 @@ alwaysApply: false
 
 ### Correct Workflow for Creating Colored Physics Objects
 
-#### Method 1: Using create_bouncy_ball (Recommended)
-```python
-# This should work after the fix
-create_bouncy_ball(
-    name="UniqueName",
-    location=[x, y, z],
-    color=[r, g, b, 1.0],  # RGBA format, values 0-1
-    size=3.0
-)
-```
-
-#### Method 2: Using spawn_physics_actor (Works great for cubes and basic shapes)
+#### Method 1: Using spawn_physics_actor (Recommended for all shapes)
 ```python
 # PROVEN WORKFLOW - Works perfectly for colored cubes/shapes
 # 1. Spawn physics actor first
@@ -49,7 +38,7 @@ compile_blueprint("UniqueName_BP")
 set_actor_transform(actual_spawned_name, scale=[1, 1, 1])
 ```
 
-#### Method 3: Manual Blueprint Creation (When other methods fail)
+#### Method 2: Manual Blueprint Creation (When other methods fail)
 ```python
 # 1. Create unique blueprint
 create_blueprint("UniqueName_BP", "Actor")
