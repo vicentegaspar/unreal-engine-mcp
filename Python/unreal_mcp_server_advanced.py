@@ -1304,6 +1304,139 @@ def create_obstacle_course(
         return {"success": False, "message": str(e)}
 
 
+@mcp.tool()
+def configure_blueprint(
+    blueprint_name: str,
+    components: List[Dict[str, Any]],
+    compile_at_end: bool = True
+) -> Dict[str, Any]:
+    """Configure a Blueprint in one call and optionally compile at the end.
+
+    This function attaches components, applies transforms, sets meshes and colors,
+    then compiles the Blueprint when finished. It eliminates the need to call
+    multiple functions for common setup flows.
+
+    Each item in the `components` list can include:
+    - component_type: e.g. "StaticMeshComponent" (required)
+    - component_name: unique name for the component (required)
+    - location: [x, y, z]
+    - rotation: [pitch, yaw, roll]
+    - scale: [sx, sy, sz]
+    - component_properties: dict of additional properties for `add_component_to_blueprint`
+    - static_mesh: asset path to assign to the component's mesh
+    - color: [r, g, b, a] where values are 0..1, applied to BaseColor/Color
+    - material_path: optional material to apply when setting color
+    - parameter_name: optional material parameter name to prioritize (default BaseColor)
+    """
+    unreal = get_unreal_connection()
+    if not unreal:
+        return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+    overall_success = True
+    component_results: List[Dict[str, Any]] = []
+
+    for component in components or []:
+        result: Dict[str, Any] = {
+            "component_name": component.get("component_name"),
+            "component_type": component.get("component_type"),
+            "steps": {}
+        }
+        try:
+            # 1) Attach/add the component
+            add_params = {
+                "blueprint_name": blueprint_name,
+                "component_type": component.get("component_type"),
+                "component_name": component.get("component_name"),
+                "location": component.get("location", []),
+                "rotation": component.get("rotation", []),
+                "scale": component.get("scale", []),
+                "component_properties": component.get("component_properties", {})
+            }
+            add_resp = unreal.send_command("add_component_to_blueprint", add_params)
+            result["steps"]["add_component_to_blueprint"] = add_resp
+            if not (add_resp and add_resp.get("success")):
+                overall_success = False
+
+            # 2) Assign static mesh if provided
+            if component.get("static_mesh"):
+                mesh_resp = unreal.send_command(
+                    "set_static_mesh_properties",
+                    {
+                        "blueprint_name": blueprint_name,
+                        "component_name": component.get("component_name"),
+                        "static_mesh": component.get("static_mesh")
+                    }
+                )
+                result["steps"]["set_static_mesh_properties"] = mesh_resp
+                if not (mesh_resp and mesh_resp.get("success")):
+                    overall_success = False
+
+            # 3) Apply color if provided
+            if component.get("color") is not None:
+                color_list = component.get("color")
+                try:
+                    # Clamp color values to [0,1]
+                    color_list = [float(min(1.0, max(0.0, v))) for v in color_list]
+                except Exception:
+                    pass
+
+                material_path = component.get(
+                    "material_path",
+                    "/Engine/BasicShapes/BasicShapeMaterial"
+                )
+                preferred_param = component.get("parameter_name", "BaseColor")
+
+                # Try preferred parameter first, then a fallback to "Color"
+                base_resp = unreal.send_command(
+                    "set_mesh_material_color",
+                    {
+                        "blueprint_name": blueprint_name,
+                        "component_name": component.get("component_name"),
+                        "color": color_list,
+                        "material_path": material_path,
+                        "parameter_name": preferred_param
+                    }
+                )
+                color_resp = unreal.send_command(
+                    "set_mesh_material_color",
+                    {
+                        "blueprint_name": blueprint_name,
+                        "component_name": component.get("component_name"),
+                        "color": color_list,
+                        "material_path": material_path,
+                        "parameter_name": "Color"
+                    }
+                )
+                result["steps"]["set_mesh_material_color"] = {
+                    "preferred": base_resp,
+                    "fallback": color_resp
+                }
+                if not ((base_resp and base_resp.get("success")) or (color_resp and color_resp.get("success"))):
+                    overall_success = False
+
+        except Exception as inner_e:
+            result["error"] = str(inner_e)
+            overall_success = False
+
+        component_results.append(result)
+
+    compile_result: Dict[str, Any] = {}
+    if compile_at_end:
+        try:
+            compile_result = unreal.send_command("compile_blueprint", {"blueprint_name": blueprint_name}) or {}
+            if not compile_result.get("success"):
+                overall_success = False
+        except Exception as e:
+            compile_result = {"success": False, "message": str(e)}
+            overall_success = False
+
+    return {
+        "success": overall_success,
+        "blueprint_name": blueprint_name,
+        "components": component_results,
+        "compile_result": compile_result
+    }
+    
 # Missing Material Color Function
 @mcp.tool()
 def set_mesh_material_color(
