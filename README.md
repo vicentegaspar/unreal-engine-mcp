@@ -21,14 +21,14 @@ Check out these examples of the MCP server in action on our channel:
 
 ```bash
 # Create a massive futuristic city with skyscrapers, flying cars, and advanced infrastructure
-> "Build a massive futuristic city with towering skyscrapers, flying vehicles, and neon-lit streets"
+> "Build a massive futuristic city with towering skyscrapers"
 → create_town(town_size="massive", architectural_style="futuristic", building_density=0.95, include_advanced_features=true)
 ```
 
 ### Advanced Structures  
 ```bash
 # Build complex multi-room houses with windows, doors, and roofs
-> "Create a Victorian mansion with 3 floors and a chimney"
+> "Create a Victorian mansion complex with east and west wing houses."
 → construct_house(house_style="mansion", width=1500, height=900)
 ```
 
