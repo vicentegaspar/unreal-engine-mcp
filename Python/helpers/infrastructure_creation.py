@@ -15,7 +15,10 @@ logger = logging.getLogger(__name__)
 def _create_street_grid(blocks: int, block_size: float, street_width: float, location: List[float], name_prefix: str) -> Dict[str, Any]:
     """Create a grid of streets for the town."""
     try:
-        from unreal_mcp_server_advanced import get_unreal_connection, set_actor_transform
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
+        set_actor_transform = server.set_actor_transform
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -80,7 +83,10 @@ def _create_street_lights(blocks: int, block_size: float, location: List[float],
     """Create street lights throughout the town."""
     try:
         import random
-        from unreal_mcp_server_advanced import get_unreal_connection, set_actor_transform
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
+        set_actor_transform = server.set_actor_transform
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -131,7 +137,10 @@ def _create_town_vehicles(blocks: int, block_size: float, street_width: float, l
     """Create vehicles throughout the town."""
     try:
         import random
-        from unreal_mcp_server_advanced import get_unreal_connection, set_actor_transform
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
+        set_actor_transform = server.set_actor_transform
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -168,7 +177,10 @@ def _create_town_decorations(blocks: int, block_size: float, location: List[floa
     """Create parks, trees, and other decorative elements."""
     try:
         import random
-        from unreal_mcp_server_advanced import get_unreal_connection, set_actor_transform
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
+        set_actor_transform = server.set_actor_transform
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -222,7 +234,9 @@ def _create_traffic_lights(blocks: int, block_size: float, location: List[float]
     try:
         import random
         import math
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -279,7 +293,9 @@ def _create_street_signage(blocks: int, block_size: float, location: List[float]
     """Create street signs and billboards."""
     try:
         import random
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -364,7 +380,9 @@ def _create_street_signage(blocks: int, block_size: float, location: List[float]
 def _create_sidewalks_crosswalks(blocks: int, block_size: float, street_width: float, location: List[float], name_prefix: str) -> Dict[str, Any]:
     """Create sidewalks and crosswalks."""
     try:
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -474,7 +492,9 @@ def _create_urban_furniture(blocks: int, block_size: float, location: List[float
     """Create benches, trash cans, and bus stops."""
     try:
         import random
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -589,7 +609,9 @@ def _create_street_utilities(blocks: int, block_size: float, location: List[floa
     """Create parking meters and fire hydrants."""
     try:
         import random
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -675,7 +697,9 @@ def _create_central_plaza(blocks: int, block_size: float, location: List[float],
     """Create a central plaza with fountain and monuments."""
     try:
         import math
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:

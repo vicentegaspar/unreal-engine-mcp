@@ -17,9 +17,10 @@ def _create_town_building(building_type: str, location: List[float], max_size: f
     try:
         import random
         
-        from unreal_mcp_server_advanced import (
-            construct_house, create_tower
-        )
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        construct_house = server.construct_house
+        create_tower = server.create_tower
         from helpers.advanced_buildings import (
             _create_skyscraper, _create_office_tower, _create_apartment_complex,
             _create_shopping_mall, _create_parking_garage, _create_hotel, 

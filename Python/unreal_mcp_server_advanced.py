@@ -1063,7 +1063,7 @@ def spawn_physics_blueprint_actor (
     mass: float = 1.0,
     simulate_physics: bool = True,
     gravity_enabled: bool = True,
-    color: List[float] = None,  # Optional color parameter [R, G, B, A]
+    color: List[float] = None,  # Optional color parameter [R, G, B] or [R, G, B, A]
     scale: List[float] = [1.0, 1.0, 1.0]  # Default scale
 ) -> Dict[str, Any]:
     """
@@ -1073,6 +1073,10 @@ def spawn_physics_blueprint_actor (
     It handles creating a temporary Blueprint, setting up the mesh, color, and physics,
     and then spawns the actor in the world. It's ideal for quickly adding
     dynamic objects to the scene without needing to manually create Blueprints.
+    
+    Args:
+        color: Optional color as [R, G, B] or [R, G, B, A] where values are 0.0-1.0.
+               If [R, G, B] is provided, alpha will be set to 1.0 automatically.
     """
     try:
         bp_name = f"{name}_BP"
@@ -1083,7 +1087,17 @@ def spawn_physics_blueprint_actor (
         
         # Set color if provided
         if color is not None:
-            set_mesh_material_color(bp_name, "Mesh", color)
+            # Convert 3-value color [R,G,B] to 4-value [R,G,B,A] if needed
+            if len(color) == 3:
+                color = color + [1.0]  # Add alpha=1.0
+            elif len(color) != 4:
+                logger.warning(f"Invalid color format: {color}. Expected [R,G,B] or [R,G,B,A]. Skipping color.")
+                color = None
+            
+            if color is not None:
+                color_result = set_mesh_material_color(bp_name, "Mesh", color)
+                if not color_result.get("success", False):
+                    logger.warning(f"Failed to set color {color} for {bp_name}: {color_result.get('message', 'Unknown error')}")
         
         compile_blueprint(bp_name)
         result = spawn_blueprint_actor(bp_name, name, location)
