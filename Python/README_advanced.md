@@ -30,7 +30,7 @@ This server contains only the essential tools needed for advanced level building
 - `create_staircase(steps, step_size, location, ...)` - Build staircases
 - `construct_house(width, depth, height, location, ...)` - **Enhanced** game-ready houses
 - `create_arch(radius, segments, location, ...)` - Arch structures
-- `spawn_physics_actor(name, mesh_path, location, mass, ...)` - Physics objects
+- `spawn_physics_blueprint_actor (name, mesh_path, location, mass, ...)` - Physics objects
 - `create_maze(rows, cols, cell_size, wall_height, location)` - Grid mazes
 - `create_obstacle_course(checkpoints, spacing, location)` - Obstacle courses
 

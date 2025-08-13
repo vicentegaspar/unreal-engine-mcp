@@ -11,8 +11,8 @@ Real-world examples showing how natural language requests translate into MCP too
 ```bash
 1. construct_house(house_style="modern", width=1200, depth=800, location=[0, 0, 0])
 2. create_pyramid(base_size=2, block_size=50, location=[800, 400, 0])  # Garden feature
-3. spawn_physics_actor(name="GardenSphere1", mesh_path="/Engine/BasicShapes/Sphere.Sphere", location=[600, 200, 50])
-4. spawn_physics_actor(name="GardenSphere2", mesh_path="/Engine/BasicShapes/Sphere.Sphere", location=[700, 300, 50])
+3. spawn_physics_blueprint_actor (name="GardenSphere1", mesh_path="/Engine/BasicShapes/Sphere.Sphere", location=[600, 200, 50])
+4. spawn_physics_blueprint_actor (name="GardenSphere2", mesh_path="/Engine/BasicShapes/Sphere.Sphere", location=[700, 300, 50])
 ```
 
 ### Medieval Castle Complex
@@ -163,7 +163,7 @@ create_obstacle_course(checkpoints=5, spacing=400, location=[1000, 1000, 0])
 **Phase 2: Interactive Elements**
 ```bash
 4. create_pyramid(base_size=3, location=[0, 2000, 0])                        # Climbable structure
-6. spawn_physics_actor(name="MovableCrate", location=[500, 500, 50])         # Interactive object
+6. spawn_physics_blueprint_actor (name="MovableCrate", location=[500, 500, 50])         # Interactive object
 ```
 
 **Phase 3: Characters and Atmosphere**
@@ -179,8 +179,8 @@ create_obstacle_course(checkpoints=5, spacing=400, location=[1000, 1000, 0])
 ```bash
 construct_house(house_style="cottage", location=[0, 0, 0])
 # Add green spheres as "foliage"
-spawn_physics_actor(name="Tree1", mesh_path="/Engine/BasicShapes/Sphere.Sphere", location=[300, 300, 100])
-spawn_physics_actor(name="Tree2", mesh_path="/Engine/BasicShapes/Sphere.Sphere", location=[-200, 400, 100])
+spawn_physics_blueprint_actor (name="Tree1", mesh_path="/Engine/BasicShapes/Sphere.Sphere", location=[300, 300, 100])
+spawn_physics_blueprint_actor (name="Tree2", mesh_path="/Engine/BasicShapes/Sphere.Sphere", location=[-200, 400, 100])
 ```
 
 **Winter Version:**
