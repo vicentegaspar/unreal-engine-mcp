@@ -38,12 +38,8 @@ TSharedPtr<FJsonObject> FEpicUnrealMCPEditorCommands::HandleCommand(const FStrin
     {
         return HandleFindActorsByName(Params);
     }
-    else if (CommandType == TEXT("spawn_actor") || CommandType == TEXT("create_actor"))
+    else if (CommandType == TEXT("spawn_actor"))
     {
-        if (CommandType == TEXT("create_actor"))
-        {
-            UE_LOG(LogTemp, Warning, TEXT("'create_actor' command is deprecated and will be removed in a future version. Please use 'spawn_actor' instead."));
-        }
         return HandleSpawnActor(Params);
     }
     else if (CommandType == TEXT("delete_actor"))
