@@ -16,7 +16,9 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
     """Create an impressive skyscraper with multiple sections and details."""
     try:
         import random
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -114,7 +116,9 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
 def _create_office_tower(floors: int, width: float, depth: float, location: List[float], name_prefix: str) -> Dict[str, Any]:
     """Create a modern office tower with glass facade appearance."""
     try:
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -193,7 +197,9 @@ def _create_office_tower(floors: int, width: float, depth: float, location: List
 def _create_apartment_complex(floors: int, units_per_floor: int, location: List[float], name_prefix: str) -> Dict[str, Any]:
     """Create a multi-unit residential complex with balconies."""
     try:
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -274,7 +280,9 @@ def _create_apartment_complex(floors: int, units_per_floor: int, location: List[
 def _create_shopping_mall(width: float, depth: float, floors: int, location: List[float], name_prefix: str) -> Dict[str, Any]:
     """Create a large shopping mall with entrance canopy."""
     try:
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -350,7 +358,9 @@ def _create_shopping_mall(width: float, depth: float, floors: int, location: Lis
 def _create_parking_garage(levels: int, width: float, depth: float, location: List[float], name_prefix: str) -> Dict[str, Any]:
     """Create a multi-level parking structure."""
     try:
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -445,7 +455,9 @@ def _create_parking_garage(levels: int, width: float, depth: float, location: Li
 def _create_hotel(floors: int, width: float, depth: float, location: List[float], name_prefix: str) -> Dict[str, Any]:
     """Create a luxury hotel with distinctive features."""
     try:
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -533,7 +545,9 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
 def _create_restaurant(width: float, depth: float, location: List[float], name_prefix: str) -> Dict[str, Any]:
     """Create a small restaurant/cafe building."""
     try:
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -596,7 +610,9 @@ def _create_restaurant(width: float, depth: float, location: List[float], name_p
 def _create_store(width: float, depth: float, location: List[float], name_prefix: str) -> Dict[str, Any]:
     """Create a small retail store."""
     try:
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
@@ -648,7 +664,9 @@ def _create_store(width: float, depth: float, location: List[float], name_prefix
 def _create_apartment_building(floors: int, width: float, depth: float, location: List[float], name_prefix: str) -> Dict[str, Any]:
     """Create a smaller residential apartment building."""
     try:
-        from unreal_mcp_server_advanced import get_unreal_connection
+        # Import here to avoid circular imports
+        import unreal_mcp_server_advanced as server
+        get_unreal_connection = server.get_unreal_connection
         
         unreal = get_unreal_connection()
         if not unreal:
