@@ -13,17 +13,16 @@
 ## 🎬 See It In Action
 
 Check out these examples of the MCP server in action on our channel:
-
+- **[GPT-5 vs Claude](https://youtube.com/shorts/xgoJ4d3d4-4)** - Watch Claude and GPT-5 go head-to-head building simultaneously - Claude creates a massive fortress while GPT-5 builds a sprawling city
 - **[Advanced Metropolis Generation](https://youtube.com/shorts/6WkxCQXbCWk)** - Watch AI generate a full-blown metropolis with towers, streets, parks, and over 4,000 objects from a single prompt
 - **[Advanced Maze & Mansion Generation](https://youtube.com/shorts/ArExYGpIZwI)** - Watch Claude generate a playable maze and complete mansion complex with wings, towers, and arches
-- **[Architectural Structures](https://youtube.com/shorts/i6CYbvPTvPs)** - Building detailed structures with AI
 
 ## Featured Capabilities
 
 ```bash
-# Create an entire realistic town with roads, buildings, and infrastructure
-> "Build a medium-sized town with mixed architectural styles"
-→ create_town(town_size="medium", architectural_style="mixed", building_density=0.8)
+# Create a massive futuristic city with skyscrapers, flying cars, and advanced infrastructure
+> "Build a massive futuristic city with towering skyscrapers, flying vehicles, and neon-lit streets"
+→ create_town(town_size="massive", architectural_style="futuristic", building_density=0.95, include_advanced_features=true)
 ```
 
 ### Advanced Structures  
@@ -38,11 +37,6 @@ Check out these examples of the MCP server in action on our channel:
 # Generate solvable mazes with guaranteed paths using recursive backtracking
 > "Make a 15x15 maze with high walls"
 → create_maze(rows=15, cols=15, wall_height=4, cell_size=250)
-```
-
-### Physics Simulations
-```bash
-# Create physics objects with custom properties
 ```
 
 ---
@@ -182,21 +176,6 @@ graph TB
 ---
 
 ## Examples & Guides
-
-### Quick Examples
-```bash
-# Build a complete scene
-> "Create a small town with a central plaza, some houses, and a tower"
-
-# Physics demonstration  
-> "Make a pyramid of boxes that can be knocked down by a bouncing ball"
-
-# Architectural showcase
-> "Build a modern house with glass windows and a flat roof next to a traditional cottage"
-
-# Game level design
-> "Create an obstacle course with pillars, walls, and a finish line"
-```
 
 ### Advanced Workflows
 - **Multi-AI Building**: Set up multiple AI agents to build different districts of a city simultaneously
