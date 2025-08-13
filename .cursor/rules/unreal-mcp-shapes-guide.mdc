@@ -15,11 +15,11 @@ alwaysApply: false
 
 ### Correct Workflow for Creating Colored Physics Objects
 
-#### Method 1: Using spawn_physics_actor (Recommended for all shapes)
+#### Method 1: Using spawn_physics_blueprint_actor  (Recommended for all shapes)
 ```python
 # PROVEN WORKFLOW - Works perfectly for colored cubes/shapes
 # 1. Spawn physics actor first
-spawn_physics_actor(
+spawn_physics_blueprint_actor (
     name="UniqueName",
     mesh_path="/Engine/BasicShapes/Cube.Cube",  # or Sphere.Sphere, etc.
     location=[x, y, z],

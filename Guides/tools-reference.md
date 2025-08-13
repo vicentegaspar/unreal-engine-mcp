@@ -148,7 +148,7 @@ Build stepped staircases with configurable dimensions.
 
 ## ⚛️ Physics & Materials
 
-### spawn_physics_actor
+### spawn_physics_blueprint_actor 
 Create actors with custom physics properties and materials.
 
 **Parameters:**

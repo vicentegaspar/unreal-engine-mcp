@@ -53,7 +53,7 @@ Check out these examples of the MCP server in action on our channel:
 |--------------|-----------|-----------------|
 | **World Building** | `create_town`, `construct_house`, `create_tower`, `create_arch` | Build complex architectural structures and entire settlements |
 | **Level Design** | `create_maze`, `create_obstacle_course`, `create_pyramid`, `create_wall` | Design challenging game levels and puzzles |
-| **Physics & Materials** | `spawn_physics_actor`, `set_physics_properties` | Create realistic physics simulations |
+| **Physics & Materials** | `spawn_physics_blueprint_actor `, `set_physics_properties` | Create realistic physics simulations |
 | **Blueprint System** | `create_blueprint`, `compile_blueprint`, `add_component_to_blueprint` | Visual scripting and custom actor creation |
 | **Actor Management** | `spawn_actor`, `delete_actor`, `set_actor_transform`, `find_actors_by_name` | Precise control over scene objects |
 
