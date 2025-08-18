@@ -11,6 +11,8 @@
 > **Active Development**: This project is under very active development with consistent updates, new features, and improvements being added regularly. Join our [Discord](https://discord.gg/3KNkke3rnH) to stay updated on the latest releases!
 
 ## 🎬 See It In Action
+Watch our comprehensive tutorial for complete setup and usage:
+- **[Complete MCP Tutorial & Installation Guide](https://youtu.be/ct5dNJC-Hx4)** - Full walkthrough of installation, setup, and advanced usage
 
 Check out these examples of the MCP server in action on our channel:
 - **[GPT-5 vs Claude](https://youtube.com/shorts/xgoJ4d3d4-4)** - Watch Claude and GPT-5 go head-to-head building simultaneously - Claude creates a massive fortress while GPT-5 builds a sprawling city
@@ -144,7 +146,6 @@ For improved results, especially when creating specific types of objects, provid
 
 ```bash
 > "Create a medieval castle with towers and walls"
-> "Build a physics playground with bouncing balls"  
 > "Generate a town square with fountain and buildings"
 > "Make a challenging maze for players to solve"
 ```
@@ -172,30 +173,6 @@ graph TB
 **Performance**: Native C++ plugin ensures minimal latency for real-time control
 **Reliability**: Robust TCP communication with automatic reconnection
 **Flexibility**: Full access to Unreal's actor, component, and Blueprint systems
-
----
-
-## Examples & Guides
-
-### Advanced Workflows
-- **Multi-AI Building**: Set up multiple AI agents to build different districts of a city simultaneously
-- **Physics Playgrounds**: Create interactive environments with realistic object behavior
-- **Procedural Content**: Generate mazes, buildings, and landscapes through AI prompts
-- **Rapid Prototyping**: Test game mechanics and level designs through natural language
-
----
-
-## What Makes This Special
-
-**AI-First Design**: Every tool designed specifically for natural language control by AI agents
-
-**Real-Time Feedback**: Immediate visual results in Unreal Editor as you build
-
-**Scalable**: From single objects to complete environments - no limits on complexity
-
-**Game-Engine Native**: Full access to Unreal's rendering, physics, and material systems
-
-**Extensible**: Add your own tools and extend functionality through the modular architecture
 
 ---
 
