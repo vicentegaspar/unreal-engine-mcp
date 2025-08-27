@@ -230,7 +230,11 @@ FString UEpicUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const T
                      CommandType == TEXT("set_physics_properties") ||
                      CommandType == TEXT("compile_blueprint") ||
                      CommandType == TEXT("set_static_mesh_properties") ||
-                     CommandType == TEXT("set_mesh_material_color"))
+                     CommandType == TEXT("set_mesh_material_color") ||
+                     CommandType == TEXT("get_available_materials") ||
+                     CommandType == TEXT("apply_material_to_actor") ||
+                     CommandType == TEXT("apply_material_to_blueprint") ||
+                     CommandType == TEXT("get_actor_material_info"))
             {
                 ResultJson = BlueprintCommands->HandleCommand(CommandType, Params);
             }

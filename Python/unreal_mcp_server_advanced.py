@@ -28,6 +28,11 @@ from helpers.castle_creation import (
 )
 from helpers.house_construction import build_house
 
+from helpers.mansion_creation import (
+    get_mansion_size_params, calculate_mansion_layout, build_mansion_main_structure,
+    build_mansion_exterior, add_mansion_interior
+)
+
 # Configure logging with more detailed format
 logging.basicConfig(
     level=logging.DEBUG,
@@ -750,19 +755,75 @@ def construct_house(
     location: List[float] = [0.0, 0.0, 0.0],
     name_prefix: str = "House",
     mesh: str = "/Engine/BasicShapes/Cube.Cube",
-    house_style: str = "modern"  # "modern", "cottage", "mansion"
+    house_style: str = "modern"  # "modern", "cottage"
 ) -> Dict[str, Any]:
     """Construct a realistic house with architectural details and multiple rooms."""
     try:
         unreal = get_unreal_connection()
         if not unreal:
             return {"success": False, "message": "Failed to connect to Unreal Engine"}
-        
+
         # Use the helper function to build the house
         return build_house(unreal, width, depth, height, location, name_prefix, mesh, house_style)
-        
+
     except Exception as e:
         logger.error(f"construct_house error: {e}")
+        return {"success": False, "message": str(e)}
+
+
+
+@mcp.tool()
+def construct_mansion(
+    mansion_scale: str = "large",  # "small", "large", "epic", "legendary"
+    location: List[float] = [0.0, 0.0, 0.0],
+    name_prefix: str = "Mansion"
+) -> Dict[str, Any]:
+    """
+    Construct a magnificent mansion with multiple wings, grand rooms, gardens,
+    fountains, and luxury features perfect for dramatic TikTok reveals.
+    """
+    try:
+        unreal = get_unreal_connection()
+        if not unreal:
+            return {"success": False, "message": "Failed to connect to Unreal Engine"}
+
+        logger.info(f"Creating {mansion_scale} mansion")
+        all_actors = []
+
+        # Get size parameters and calculate scaled dimensions
+        params = get_mansion_size_params(mansion_scale)
+        layout = calculate_mansion_layout(params)
+
+        # Build mansion main structure
+        build_mansion_main_structure(unreal, name_prefix, location, layout, all_actors)
+
+        # Build mansion exterior
+        build_mansion_exterior(unreal, name_prefix, location, layout, all_actors)
+
+        # Add luxurious interior
+        add_mansion_interior(unreal, name_prefix, location, layout, all_actors)
+
+        logger.info(f"Mansion construction complete! Created {len(all_actors)} elements")
+
+        return {
+            "success": True,
+            "message": f"Magnificent {mansion_scale} mansion created with {len(all_actors)} elements!",
+            "actors": all_actors,
+            "stats": {
+                "scale": mansion_scale,
+                "wings": layout["wings"],
+                "floors": layout["floors"],
+                "main_rooms": layout["main_rooms"],
+                "bedrooms": layout["bedrooms"],
+                "garden_size": layout["garden_size"],
+                "fountain_count": layout["fountain_count"],
+                "car_count": layout["car_count"],
+                "total_actors": len(all_actors)
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"construct_mansion error: {e}")
         return {"success": False, "message": str(e)}
 
 @mcp.tool()
@@ -999,6 +1060,198 @@ def create_obstacle_course(
 
 
 @mcp.tool()
+def get_available_materials(
+    search_path: str = "/Game/",
+    include_engine_materials: bool = True
+) -> Dict[str, Any]:
+    """Get a list of available materials in the project that can be applied to objects."""
+    unreal = get_unreal_connection()
+    if not unreal:
+        return {"success": False, "message": "Failed to connect to Unreal Engine"}
+    
+    try:
+        params = {
+            "search_path": search_path,
+            "include_engine_materials": include_engine_materials
+        }
+        response = unreal.send_command("get_available_materials", params)
+        return response or {"success": False, "message": "No response from Unreal"}
+    except Exception as e:
+        logger.error(f"get_available_materials error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
+def apply_material_to_actor(
+    actor_name: str,
+    material_path: str,
+    material_slot: int = 0
+) -> Dict[str, Any]:
+    """Apply a specific material to an actor in the level."""
+    unreal = get_unreal_connection()
+    if not unreal:
+        return {"success": False, "message": "Failed to connect to Unreal Engine"}
+    
+    try:
+        params = {
+            "actor_name": actor_name,
+            "material_path": material_path,
+            "material_slot": material_slot
+        }
+        response = unreal.send_command("apply_material_to_actor", params)
+        return response or {"success": False, "message": "No response from Unreal"}
+    except Exception as e:
+        logger.error(f"apply_material_to_actor error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
+def apply_material_to_blueprint(
+    blueprint_name: str,
+    component_name: str,
+    material_path: str,
+    material_slot: int = 0
+) -> Dict[str, Any]:
+    """Apply a specific material to a component in a Blueprint."""
+    unreal = get_unreal_connection()
+    if not unreal:
+        return {"success": False, "message": "Failed to connect to Unreal Engine"}
+    
+    try:
+        params = {
+            "blueprint_name": blueprint_name,
+            "component_name": component_name,
+            "material_path": material_path,
+            "material_slot": material_slot
+        }
+        response = unreal.send_command("apply_material_to_blueprint", params)
+        return response or {"success": False, "message": "No response from Unreal"}
+    except Exception as e:
+        logger.error(f"apply_material_to_blueprint error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
+def get_actor_material_info(
+    actor_name: str
+) -> Dict[str, Any]:
+    """Get information about the materials currently applied to an actor."""
+    unreal = get_unreal_connection()
+    if not unreal:
+        return {"success": False, "message": "Failed to connect to Unreal Engine"}
+    
+    try:
+        params = {"actor_name": actor_name}
+        response = unreal.send_command("get_actor_material_info", params)
+        return response or {"success": False, "message": "No response from Unreal"}
+    except Exception as e:
+        logger.error(f"get_actor_material_info error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
+def apply_materials_intelligently(
+    actor_name: str,
+    material_description: str = "",
+    search_paths: List[str] = ["/Game/"],
+    include_engine_materials: bool = True
+) -> Dict[str, Any]:
+    """
+    Intelligently apply materials to an actor based on description or available materials.
+    This tool will:
+    1. Get available materials in the project
+    2. Match materials based on description/name
+    3. Apply the best matching materials to the actor
+    """
+    unreal = get_unreal_connection()
+    if not unreal:
+        return {"success": False, "message": "Failed to connect to Unreal Engine"}
+    
+    try:
+        # First, get available materials
+        materials_result = get_available_materials("/Game/", include_engine_materials)
+        
+        if not materials_result.get("success", False):
+            return {"success": False, "message": f"Failed to get available materials: {materials_result.get('message', 'Unknown error')}"}
+        
+        available_materials = materials_result.get("materials", [])
+        
+        if not available_materials:
+            return {"success": False, "message": "No materials found in the project"}
+        
+        # Get current actor material info
+        actor_info_result = get_actor_material_info(actor_name)
+        material_slots = 1  # Default to 1 slot
+        
+        if actor_info_result.get("success", False):
+            material_slots = len(actor_info_result.get("material_slots", [1]))
+        
+        applied_materials = []
+        
+        # If user provided a description, try to match materials
+        if material_description:
+            description_lower = material_description.lower()
+            matching_materials = []
+            
+            # Look for materials that match the description
+            for material in available_materials:
+                material_name = material.get("name", "").lower()
+                material_path = material.get("path", "").lower()
+                
+                # Check if description matches material name or path
+                if (description_lower in material_name or 
+                    description_lower in material_path or
+                    any(word in material_name for word in description_lower.split())):
+                    matching_materials.append(material)
+            
+            if matching_materials:
+                # Apply the best matching material(s)
+                for slot in range(min(len(matching_materials), material_slots)):
+                    material_path = matching_materials[slot].get("path", "")
+                    if material_path:
+                        apply_result = apply_material_to_actor(actor_name, material_path, slot)
+                        applied_materials.append({
+                            "slot": slot,
+                            "material": material_path,
+                            "result": apply_result
+                        })
+            else:
+                return {
+                    "success": False, 
+                    "message": f"No materials found matching description: '{material_description}'",
+                    "available_materials": [m.get("name", m.get("path", "")) for m in available_materials[:10]]  # Show first 10
+                }
+        else:
+            # No description provided, apply the first available materials
+            for slot in range(min(len(available_materials), material_slots)):
+                material_path = available_materials[slot].get("path", "")
+                if material_path:
+                    apply_result = apply_material_to_actor(actor_name, material_path, slot)
+                    applied_materials.append({
+                        "slot": slot,
+                        "material": material_path,
+                        "result": apply_result
+                    })
+        
+        # Check if any materials were successfully applied
+        successful_applications = [m for m in applied_materials if m.get("result", {}).get("success", False)]
+        
+        if successful_applications:
+            return {
+                "success": True,
+                "message": f"Successfully applied {len(successful_applications)} material(s) to {actor_name}",
+                "applied_materials": applied_materials,
+                "actor_name": actor_name,
+                "description_used": material_description
+            }
+        else:
+            return {
+                "success": False,
+                "message": "Failed to apply any materials",
+                "applied_materials": applied_materials
+            }
+            
+    except Exception as e:
+        logger.error(f"apply_materials_intelligently error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
 def set_mesh_material_color(
     blueprint_name: str,
     component_name: str,
@@ -1232,7 +1485,7 @@ def create_castle_fortress(
 ) -> Dict[str, Any]:
     """
     Create a massive castle fortress with walls, towers, courtyards, throne room,
-    dungeons, and surrounding village. Perfect for dramatic TikTok reveals showing
+    and surrounding village. Perfect for dramatic TikTok reveals showing
     the scale and detail of a complete medieval fortress.
     """
     try:
