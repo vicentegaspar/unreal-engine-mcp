@@ -26,11 +26,7 @@ def build_house(
         floor_thickness = 30.0
         
         # Adjust dimensions based on style
-        if house_style in ["mansion", "luxury"]:
-            width = int(width * 1.5)
-            depth = int(depth * 1.5)
-            height = int(height * 1.3)
-        elif house_style == "cottage":
+        if house_style == "cottage":
             width = int(width * 0.8)
             depth = int(depth * 0.8)
             height = int(height * 0.9)
@@ -224,8 +220,8 @@ def _build_house_roof(unreal_connection, name_prefix, location, width, depth, he
     if resp:
         results.append(resp)
     
-    # Add chimney for cottage/mansion styles
-    if house_style in ["cottage", "mansion"]:
+    # Add chimney for cottage style
+    if house_style == "cottage":
         chimney_params = {
             "name": f"{name_prefix}_Chimney",
             "type": "StaticMeshActor",
@@ -243,66 +239,7 @@ def _build_house_roof(unreal_connection, name_prefix, location, width, depth, he
 
 def _add_house_features(unreal_connection, name_prefix, location, width, depth, height, base_z, wall_thickness, mesh, house_style, results):
     """Add style-specific features to the house."""
-    # Add porch and front pillars for mansion/luxury style
-    if house_style in ["mansion", "luxury"]:
-        # Porch floor
-        porch_floor_params = {
-            "name": f"{name_prefix}_Porch_Floor",
-            "type": "StaticMeshActor",
-            "location": [location[0], location[1] - depth/2 - 150, location[2]],
-            "scale": [width/100.0, 3.0, 0.3],
-            "static_mesh": mesh
-        }
-        resp = unreal_connection.send_command("spawn_actor", porch_floor_params)
-        if resp:
-            results.append(resp)
-        
-        # Porch columns
-        for i, x_offset in enumerate([-width/3, 0, width/3]):
-            column_params = {
-                "name": f"{name_prefix}_Porch_Column_{i}",
-                "type": "StaticMeshActor",
-                "location": [
-                    location[0] + x_offset,
-                    location[1] - depth/2 - 250,
-                    base_z + height/2
-                ],
-                "scale": [0.5, 0.5, height/100.0],
-                "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
-            }
-            resp = unreal_connection.send_command("spawn_actor", column_params)
-            if resp:
-                results.append(resp)
-        
-        # Add front facade pillars (main building support columns)
-        pillar_positions = [-width/3, -width/6, width/6, width/3]  # Four pillars across the front
-        for i, x_offset in enumerate(pillar_positions):
-            front_pillar_params = {
-                "name": f"{name_prefix}_FrontPillar_{i}",
-                "type": "StaticMeshActor",
-                "location": [
-                    location[0] + x_offset,
-                    location[1] - depth/2,  # Right at the front wall
-                    base_z + height/2
-                ],
-                "scale": [0.8, 0.8, height/100.0],  # Slightly larger than porch columns
-                "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
-            }
-            resp = unreal_connection.send_command("spawn_actor", front_pillar_params)
-            if resp:
-                results.append(resp)
-        
-        # Porch roof
-        porch_roof_params = {
-            "name": f"{name_prefix}_Porch_Roof",
-            "type": "StaticMeshActor",
-            "location": [location[0], location[1] - depth/2 - 150, base_z + height - 50],
-            "scale": [(width + 100)/100.0, 4.0, 0.3],  # Consistent thickness with main roof
-            "static_mesh": mesh
-        }
-        resp = unreal_connection.send_command("spawn_actor", porch_roof_params)
-        if resp:
-            results.append(resp)
+
     
     # Add details based on style
     if house_style == "modern":
@@ -322,11 +259,8 @@ def _get_house_features(house_style: str) -> List[str]:
     """Get the list of features for a house style."""
     base_features = ["foundation", "floor", "walls", "windows", "door", "flat_roof"]
     
-    if house_style in ["cottage", "mansion", "luxury"]:
+    if house_style == "cottage":
         base_features.append("chimney")
-    
-    if house_style in ["mansion", "luxury"]:
-        base_features.extend(["porch", "columns", "front_pillars"])
     
     if house_style == "modern":
         base_features.append("garage")

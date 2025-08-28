@@ -13,6 +13,8 @@
 #include "Components/PrimitiveComponent.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/Material.h"
+#include "Materials/MaterialInstanceConstant.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Engine/Engine.h"
 #include "Kismet2/BlueprintEditorUtils.h"
@@ -25,6 +27,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/Pawn.h"
+#include "Kismet/GameplayStatics.h"
 
 FEpicUnrealMCPBlueprintCommands::FEpicUnrealMCPBlueprintCommands()
 {
@@ -59,6 +62,23 @@ TSharedPtr<FJsonObject> FEpicUnrealMCPBlueprintCommands::HandleCommand(const FSt
     else if (CommandType == TEXT("set_mesh_material_color"))
     {
         return HandleSetMeshMaterialColor(Params);
+    }
+    // Material management commands
+    else if (CommandType == TEXT("get_available_materials"))
+    {
+        return HandleGetAvailableMaterials(Params);
+    }
+    else if (CommandType == TEXT("apply_material_to_actor"))
+    {
+        return HandleApplyMaterialToActor(Params);
+    }
+    else if (CommandType == TEXT("apply_material_to_blueprint"))
+    {
+        return HandleApplyMaterialToBlueprint(Params);
+    }
+    else if (CommandType == TEXT("get_actor_material_info"))
+    {
+        return HandleGetActorMaterialInfo(Params);
     }
     
     return FEpicUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Unknown blueprint command: %s"), *CommandType));
@@ -652,5 +672,371 @@ TSharedPtr<FJsonObject> FEpicUnrealMCPBlueprintCommands::HandleSetMeshMaterialCo
     ResultObj->SetArrayField(TEXT("color"), ColorResultArray);
     
     ResultObj->SetBoolField(TEXT("success"), true);
+    return ResultObj;
+}
+
+TSharedPtr<FJsonObject> FEpicUnrealMCPBlueprintCommands::HandleGetAvailableMaterials(const TSharedPtr<FJsonObject>& Params)
+{
+    // Get parameters - make search path completely dynamic
+    FString SearchPath;
+    if (!Params->TryGetStringField(TEXT("search_path"), SearchPath))
+    {
+        // Default to empty string to search everywhere
+        SearchPath = TEXT("");
+    }
+    
+    bool bIncludeEngineMaterials = true;
+    if (Params->HasField(TEXT("include_engine_materials")))
+    {
+        bIncludeEngineMaterials = Params->GetBoolField(TEXT("include_engine_materials"));
+    }
+
+    // Get asset registry module
+    FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+    IAssetRegistry& AssetRegistry = AssetRegistryModule.Get();
+
+    // Create filter for materials
+    FARFilter Filter;
+    Filter.ClassPaths.Add(UMaterialInterface::StaticClass()->GetClassPathName());
+    Filter.ClassPaths.Add(UMaterial::StaticClass()->GetClassPathName());
+    Filter.ClassPaths.Add(UMaterialInstanceConstant::StaticClass()->GetClassPathName());
+    Filter.ClassPaths.Add(UMaterialInstanceDynamic::StaticClass()->GetClassPathName());
+    
+    // Add search paths dynamically
+    if (!SearchPath.IsEmpty())
+    {
+        // Ensure the path starts with /
+        if (!SearchPath.StartsWith(TEXT("/")))
+        {
+            SearchPath = TEXT("/") + SearchPath;
+        }
+        // Ensure the path ends with / for proper directory search
+        if (!SearchPath.EndsWith(TEXT("/")))
+        {
+            SearchPath += TEXT("/");
+        }
+        Filter.PackagePaths.Add(*SearchPath);
+        UE_LOG(LogTemp, Log, TEXT("Searching for materials in: %s"), *SearchPath);
+    }
+    else
+    {
+        // Search in common game content locations
+        Filter.PackagePaths.Add(TEXT("/Game/"));
+        UE_LOG(LogTemp, Log, TEXT("Searching for materials in all game content"));
+    }
+    
+    if (bIncludeEngineMaterials)
+    {
+        Filter.PackagePaths.Add(TEXT("/Engine/"));
+        UE_LOG(LogTemp, Log, TEXT("Including Engine materials in search"));
+    }
+    
+    Filter.bRecursivePaths = true;
+
+    // Get assets from registry
+    TArray<FAssetData> AssetDataArray;
+    AssetRegistry.GetAssets(Filter, AssetDataArray);
+    
+    UE_LOG(LogTemp, Log, TEXT("Asset registry found %d materials"), AssetDataArray.Num());
+
+    // Also try manual search using EditorAssetLibrary for more comprehensive results
+    TArray<FString> AllAssetPaths;
+    if (!SearchPath.IsEmpty())
+    {
+        AllAssetPaths = UEditorAssetLibrary::ListAssets(SearchPath, true, false);
+    }
+    else
+    {
+        AllAssetPaths = UEditorAssetLibrary::ListAssets(TEXT("/Game/"), true, false);
+    }
+    
+    // Filter for materials from the manual search
+    for (const FString& AssetPath : AllAssetPaths)
+    {
+        if (AssetPath.Contains(TEXT("Material")) && !AssetPath.Contains(TEXT(".uasset")))
+        {
+            UObject* Asset = UEditorAssetLibrary::LoadAsset(AssetPath);
+            if (Asset && Asset->IsA<UMaterialInterface>())
+            {
+                // Check if we already have this asset from registry search
+                bool bAlreadyFound = false;
+                for (const FAssetData& ExistingData : AssetDataArray)
+                {
+                    if (ExistingData.GetObjectPathString() == AssetPath)
+                    {
+                        bAlreadyFound = true;
+                        break;
+                    }
+                }
+                
+                if (!bAlreadyFound)
+                {
+                    // Create FAssetData manually for this asset
+                    FAssetData ManualAssetData(Asset);
+                    AssetDataArray.Add(ManualAssetData);
+                }
+            }
+        }
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Total materials found after manual search: %d"), AssetDataArray.Num());
+
+    // Convert to JSON
+    TArray<TSharedPtr<FJsonValue>> MaterialArray;
+    for (const FAssetData& AssetData : AssetDataArray)
+    {
+        TSharedPtr<FJsonObject> MaterialObj = MakeShared<FJsonObject>();
+        MaterialObj->SetStringField(TEXT("name"), AssetData.AssetName.ToString());
+        MaterialObj->SetStringField(TEXT("path"), AssetData.GetObjectPathString());
+        MaterialObj->SetStringField(TEXT("package"), AssetData.PackageName.ToString());
+        MaterialObj->SetStringField(TEXT("class"), AssetData.AssetClassPath.ToString());
+        
+        MaterialArray.Add(MakeShared<FJsonValueObject>(MaterialObj));
+        
+        UE_LOG(LogTemp, Verbose, TEXT("Found material: %s at %s"), *AssetData.AssetName.ToString(), *AssetData.GetObjectPathString());
+    }
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetArrayField(TEXT("materials"), MaterialArray);
+    ResultObj->SetNumberField(TEXT("count"), MaterialArray.Num());
+    ResultObj->SetStringField(TEXT("search_path_used"), SearchPath.IsEmpty() ? TEXT("/Game/") : SearchPath);
+    
+    return ResultObj;
+}
+
+TSharedPtr<FJsonObject> FEpicUnrealMCPBlueprintCommands::HandleApplyMaterialToActor(const TSharedPtr<FJsonObject>& Params)
+{
+    // Get required parameters
+    FString ActorName;
+    if (!Params->TryGetStringField(TEXT("actor_name"), ActorName))
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'actor_name' parameter"));
+    }
+
+    FString MaterialPath;
+    if (!Params->TryGetStringField(TEXT("material_path"), MaterialPath))
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'material_path' parameter"));
+    }
+
+    int32 MaterialSlot = 0;
+    if (Params->HasField(TEXT("material_slot")))
+    {
+        MaterialSlot = Params->GetIntegerField(TEXT("material_slot"));
+    }
+
+    // Find the actor
+    AActor* TargetActor = nullptr;
+    UWorld* World = GEditor->GetEditorWorldContext().World();
+    if (!World)
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Failed to get editor world"));
+    }
+    
+    TArray<AActor*> AllActors;
+    UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), AllActors);
+    
+    for (AActor* Actor : AllActors)
+    {
+        if (Actor && Actor->GetName() == ActorName)
+        {
+            TargetActor = Actor;
+            break;
+        }
+    }
+
+    if (!TargetActor)
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Actor not found: %s"), *ActorName));
+    }
+
+    // Load the material
+    UMaterialInterface* Material = Cast<UMaterialInterface>(UEditorAssetLibrary::LoadAsset(MaterialPath));
+    if (!Material)
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Failed to load material: %s"), *MaterialPath));
+    }
+
+    // Find mesh components and apply material
+    TArray<UStaticMeshComponent*> MeshComponents;
+    TargetActor->GetComponents<UStaticMeshComponent>(MeshComponents);
+    
+    bool bAppliedToAny = false;
+    for (UStaticMeshComponent* MeshComp : MeshComponents)
+    {
+        if (MeshComp)
+        {
+            MeshComp->SetMaterial(MaterialSlot, Material);
+            bAppliedToAny = true;
+        }
+    }
+
+    if (!bAppliedToAny)
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(TEXT("No mesh components found on actor"));
+    }
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetStringField(TEXT("actor_name"), ActorName);
+    ResultObj->SetStringField(TEXT("material_path"), MaterialPath);
+    ResultObj->SetNumberField(TEXT("material_slot"), MaterialSlot);
+    ResultObj->SetBoolField(TEXT("success"), true);
+    
+    return ResultObj;
+}
+
+TSharedPtr<FJsonObject> FEpicUnrealMCPBlueprintCommands::HandleApplyMaterialToBlueprint(const TSharedPtr<FJsonObject>& Params)
+{
+    // Get required parameters
+    FString BlueprintName;
+    if (!Params->TryGetStringField(TEXT("blueprint_name"), BlueprintName))
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'blueprint_name' parameter"));
+    }
+
+    FString ComponentName;
+    if (!Params->TryGetStringField(TEXT("component_name"), ComponentName))
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'component_name' parameter"));
+    }
+
+    FString MaterialPath;
+    if (!Params->TryGetStringField(TEXT("material_path"), MaterialPath))
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'material_path' parameter"));
+    }
+
+    int32 MaterialSlot = 0;
+    if (Params->HasField(TEXT("material_slot")))
+    {
+        MaterialSlot = Params->GetIntegerField(TEXT("material_slot"));
+    }
+
+    // Find the blueprint
+    UBlueprint* Blueprint = FEpicUnrealMCPCommonUtils::FindBlueprint(BlueprintName);
+    if (!Blueprint)
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Blueprint not found: %s"), *BlueprintName));
+    }
+
+    // Find the component
+    USCS_Node* ComponentNode = nullptr;
+    for (USCS_Node* Node : Blueprint->SimpleConstructionScript->GetAllNodes())
+    {
+        if (Node && Node->GetVariableName().ToString() == ComponentName)
+        {
+            ComponentNode = Node;
+            break;
+        }
+    }
+
+    if (!ComponentNode)
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Component not found: %s"), *ComponentName));
+    }
+
+    UPrimitiveComponent* PrimComponent = Cast<UPrimitiveComponent>(ComponentNode->ComponentTemplate);
+    if (!PrimComponent)
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Component is not a primitive component"));
+    }
+
+    // Load the material
+    UMaterialInterface* Material = Cast<UMaterialInterface>(UEditorAssetLibrary::LoadAsset(MaterialPath));
+    if (!Material)
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Failed to load material: %s"), *MaterialPath));
+    }
+
+    // Apply the material
+    PrimComponent->SetMaterial(MaterialSlot, Material);
+
+    // Mark the blueprint as modified
+    FBlueprintEditorUtils::MarkBlueprintAsModified(Blueprint);
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetStringField(TEXT("blueprint_name"), BlueprintName);
+    ResultObj->SetStringField(TEXT("component_name"), ComponentName);
+    ResultObj->SetStringField(TEXT("material_path"), MaterialPath);
+    ResultObj->SetNumberField(TEXT("material_slot"), MaterialSlot);
+    ResultObj->SetBoolField(TEXT("success"), true);
+    
+    return ResultObj;
+}
+
+TSharedPtr<FJsonObject> FEpicUnrealMCPBlueprintCommands::HandleGetActorMaterialInfo(const TSharedPtr<FJsonObject>& Params)
+{
+    // Get required parameters
+    FString ActorName;
+    if (!Params->TryGetStringField(TEXT("actor_name"), ActorName))
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Missing 'actor_name' parameter"));
+    }
+
+    // Find the actor
+    AActor* TargetActor = nullptr;
+    UWorld* World = GEditor->GetEditorWorldContext().World();
+    if (!World)
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(TEXT("Failed to get editor world"));
+    }
+    
+    TArray<AActor*> AllActors;
+    UGameplayStatics::GetAllActorsOfClass(World, AActor::StaticClass(), AllActors);
+    
+    for (AActor* Actor : AllActors)
+    {
+        if (Actor && Actor->GetName() == ActorName)
+        {
+            TargetActor = Actor;
+            break;
+        }
+    }
+
+    if (!TargetActor)
+    {
+        return FEpicUnrealMCPCommonUtils::CreateErrorResponse(FString::Printf(TEXT("Actor not found: %s"), *ActorName));
+    }
+
+    // Get mesh components and their materials
+    TArray<UStaticMeshComponent*> MeshComponents;
+    TargetActor->GetComponents<UStaticMeshComponent>(MeshComponents);
+    
+    TArray<TSharedPtr<FJsonValue>> MaterialSlots;
+    
+    for (UStaticMeshComponent* MeshComp : MeshComponents)
+    {
+        if (MeshComp)
+        {
+            for (int32 i = 0; i < MeshComp->GetNumMaterials(); i++)
+            {
+                TSharedPtr<FJsonObject> SlotInfo = MakeShared<FJsonObject>();
+                SlotInfo->SetNumberField(TEXT("slot"), i);
+                SlotInfo->SetStringField(TEXT("component"), MeshComp->GetName());
+                
+                UMaterialInterface* Material = MeshComp->GetMaterial(i);
+                if (Material)
+                {
+                    SlotInfo->SetStringField(TEXT("material_name"), Material->GetName());
+                    SlotInfo->SetStringField(TEXT("material_path"), Material->GetPathName());
+                    SlotInfo->SetStringField(TEXT("material_class"), Material->GetClass()->GetName());
+                }
+                else
+                {
+                    SlotInfo->SetStringField(TEXT("material_name"), TEXT("None"));
+                    SlotInfo->SetStringField(TEXT("material_path"), TEXT(""));
+                    SlotInfo->SetStringField(TEXT("material_class"), TEXT(""));
+                }
+                
+                MaterialSlots.Add(MakeShared<FJsonValueObject>(SlotInfo));
+            }
+        }
+    }
+
+    TSharedPtr<FJsonObject> ResultObj = MakeShared<FJsonObject>();
+    ResultObj->SetStringField(TEXT("actor_name"), ActorName);
+    ResultObj->SetArrayField(TEXT("material_slots"), MaterialSlots);
+    ResultObj->SetNumberField(TEXT("total_slots"), MaterialSlots.Num());
+    
     return ResultObj;
 }
