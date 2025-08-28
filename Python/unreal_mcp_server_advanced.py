@@ -32,6 +32,7 @@ from helpers.mansion_creation import (
     get_mansion_size_params, calculate_mansion_layout, build_mansion_main_structure,
     build_mansion_exterior, add_mansion_interior
 )
+from helpers.actor_utilities import spawn_blueprint_actor
 
 # Configure logging with more detailed format
 logging.basicConfig(
@@ -283,30 +284,7 @@ def find_actors_by_name(pattern: str) -> Dict[str, Any]:
         logger.error(f"find_actors_by_name error: {e}")
         return {"success": False, "message": str(e)}
 
-@mcp.tool()
-def spawn_actor(
-    name: str,
-    type: str,
-    location: List[float] = [0, 0, 0],
-    rotation: List[float] = [0, 0, 0]
-) -> Dict[str, Any]:
-    """Create a new actor in the current level."""
-    unreal = get_unreal_connection()
-    if not unreal:
-        return {"success": False, "message": "Failed to connect to Unreal Engine"}
-    
-    try:
-        params = {
-            "name": name,
-            "type": type,
-            "location": location,
-            "rotation": rotation
-        }
-        response = unreal.send_command("spawn_actor", params)
-        return response or {"success": False, "message": "No response from Unreal"}
-    except Exception as e:
-        logger.error(f"spawn_actor error: {e}")
-        return {"success": False, "message": str(e)}
+
 
 @mcp.tool()
 def delete_actor(name: str) -> Dict[str, Any]:
@@ -468,30 +446,7 @@ def compile_blueprint(blueprint_name: str) -> Dict[str, Any]:
         logger.error(f"compile_blueprint error: {e}")
         return {"success": False, "message": str(e)}
 
-@mcp.tool()
-def spawn_blueprint_actor(
-    blueprint_name: str,
-    actor_name: str,
-    location: List[float] = [0, 0, 0],
-    rotation: List[float] = [0, 0, 0]
-) -> Dict[str, Any]:
-    """Spawn an actor from a Blueprint."""
-    unreal = get_unreal_connection()
-    if not unreal:
-        return {"success": False, "message": "Failed to connect to Unreal Engine"}
-    
-    try:
-        params = {
-            "blueprint_name": blueprint_name,
-            "actor_name": actor_name,
-            "location": location,
-            "rotation": rotation
-        }
-        response = unreal.send_command("spawn_blueprint_actor", params)
-        return response or {"success": False, "message": "No response from Unreal"}
-    except Exception as e:
-        logger.error(f"spawn_blueprint_actor error: {e}")
-        return {"success": False, "message": str(e)}
+
 
 # Advanced Composition Tools
 @mcp.tool()
@@ -907,7 +862,10 @@ def spawn_physics_blueprint_actor (
                     logger.warning(f"Failed to set color {color} for {bp_name}: {color_result.get('message', 'Unknown error')}")
         
         compile_blueprint(bp_name)
-        result = spawn_blueprint_actor(bp_name, name, location)
+        
+        # Spawn the blueprint actor using helper function
+        unreal = get_unreal_connection()
+        result = spawn_blueprint_actor(unreal, bp_name, name, location)
         
         # Ensure proper scale is set on the spawned actor
         if result.get("success", False):
