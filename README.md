@@ -107,7 +107,7 @@ uv run unreal_mcp_server_advanced.py
 Add this to your MCP configuration:
 
 **Cursor**: `.cursor/mcp.json`
-**Claude Desktop**: `~/.config/claude-desktop/mcp.json` 
+**Claude Desktop**: `~/.config/claude-desktop/mcp.json`
 **Windsurf**: `~/.config/windsurf/mcp.json`
 
 ```json
@@ -116,15 +116,17 @@ Add this to your MCP configuration:
     "unrealMCP": {
       "command": "uv",
       "args": [
-        "--directory", 
+        "--directory",
         "/path/to/unreal-engine-mcp/Python",
-        "run", 
+        "run",
         "unreal_mcp_server_advanced.py"
       ]
     }
   }
 }
 ```
+
+> **⚠️ Having issues with setup?** Check our [Debugging & Troubleshooting Guide](DEBUGGING.md) for solutions to common problems like MCP installation errors and configuration issues.
 
 ### Recommended AI Model
 
@@ -187,6 +189,7 @@ graph TB
 - **TikTok**: [tiktok.com/@flopperam](https://tiktok.com/@flopperam) - Quick tips and amazing builds
 
 ### Get Help & Share
+- **Setup Issues?** Check our [Debugging & Troubleshooting Guide](DEBUGGING.md) first
 - **Questions?** Ask in our Discord server for real-time support
 - **Bug reports?** Open an issue on GitHub with reproduction steps
 - **Feature ideas?** Join the discussion in our community channels
