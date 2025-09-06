@@ -22,6 +22,9 @@ class ActorNameManager:
         self._actor_counters: Dict[str, int] = {}
         logger.info(f"ActorNameManager initialized with session ID: {self._session_id}")
         
+        # Clear any stale cache on initialization
+        self._known_actors.clear()
+        
     
     def generate_unique_name(self, base_name: str, unreal_connection=None) -> str:
         """
@@ -40,13 +43,11 @@ class ActorNameManager:
         
         # Strategy 1: Try base name as-is
         if not self._actor_exists(base_name, unreal_connection):
-            self._known_actors.add(base_name)
             return base_name
         
         # Strategy 2: Try with session ID
         session_name = f"{base_name}_{self._session_id}"
         if not self._actor_exists(session_name, unreal_connection):
-            self._known_actors.add(session_name)
             return session_name
         
         # Strategy 3: Try with counter
@@ -59,13 +60,11 @@ class ActorNameManager:
             counter_name = f"{base_name}_{self._actor_counters[counter_key]}"
             
             if not self._actor_exists(counter_name, unreal_connection):
-                self._known_actors.add(counter_name)
                 return counter_name
         
         # Strategy 4: Ultimate fallback - session + counter + UUID
         unique_suffix = str(uuid.uuid4())[:8]
         final_name = f"{base_name}_{self._session_id}_{self._actor_counters[counter_key]}_{unique_suffix}"
-        self._known_actors.add(final_name)
         
         logger.info(f"Generated unique name: {base_name} -> {final_name}")
         return final_name
@@ -80,12 +79,21 @@ class ActorNameManager:
         if unreal_connection:
             try:
                 response = unreal_connection.send_command("find_actors_by_name", {"pattern": name})
-                if response and response.get("success") and "actors" in response:
-                    actors = response["actors"]
-                    if isinstance(actors, list) and len(actors) > 0:
-                        # Found actor(s) with this name
-                        self._known_actors.add(name)
-                        return True
+                if response and response.get("status") == "success" and "actors" in response:
+                    actors = response.get("actors", [])
+                    if isinstance(actors, list):
+                        # Check for exact name match
+                        for actor in actors:
+                            if isinstance(actor, dict) and actor.get("name") == name:
+                                # Found exact match
+                                self._known_actors.add(name)
+                                return True
+                        # Also check if any actor starts with this exact name (for safety)
+                        for actor in actors:
+                            if isinstance(actor, dict) and actor.get("name", "").startswith(name):
+                                # Found actor with this base name
+                                self._known_actors.add(name)
+                                return True
             except Exception as e:
                 logger.debug(f"Error checking actor existence for '{name}': {e}")
         
@@ -106,6 +114,13 @@ _global_actor_name_manager = ActorNameManager()
 def get_global_actor_name_manager() -> ActorNameManager:
     """Get the global actor name manager instance."""
     return _global_actor_name_manager
+
+def clear_actor_cache():
+    """Clear the global actor cache."""
+    global _global_actor_name_manager
+    _global_actor_name_manager._known_actors.clear()
+    _global_actor_name_manager._actor_counters.clear()
+    logger.info("Cleared global actor cache")
 
 def get_unique_actor_name(base_name: str, unreal_connection=None) -> str:
     """Public interface to get a unique actor name."""
@@ -141,7 +156,7 @@ def safe_spawn_actor(unreal_connection, params: Dict[str, Any], auto_unique_name
         # Attempt to spawn the actor
         response = unreal_connection.send_command("spawn_actor", params)
         
-        if response and response.get("success"):
+        if response and response.get("status") == "success":
             # Mark the actor as successfully created
             _global_actor_name_manager.mark_actor_created(params["name"])
             
@@ -150,6 +165,20 @@ def safe_spawn_actor(unreal_connection, params: Dict[str, Any], auto_unique_name
                 if isinstance(response["result"], dict):
                     response["result"]["final_name"] = params["name"]
                     response["result"]["original_name"] = original_name
+        elif response and response.get("status") == "error" and "already exists" in response.get("error", ""):
+            # Actor was created by another process/thread, mark as success
+            logger.info(f"Actor '{params['name']}' was created elsewhere, marking as success")
+            _global_actor_name_manager.mark_actor_created(params["name"])
+            return {
+                "status": "success",
+                "result": {
+                    "name": params["name"],
+                    "final_name": params["name"],
+                    "original_name": original_name,
+                    "concurrent": True,
+                    "reason": "Created by concurrent process"
+                }
+            }
         
         return response or {"success": False, "status": "error", "error": "No response from Unreal"}
         
@@ -174,7 +203,7 @@ def safe_delete_actor(unreal_connection, actor_name: str) -> Dict[str, Any]:
     try:
         response = unreal_connection.send_command("delete_actor", {"name": actor_name})
         
-        if response and response.get("success"):
+        if response and response.get("status") == "success":
             # Remove from our tracking
             _global_actor_name_manager.remove_actor(actor_name)
         
