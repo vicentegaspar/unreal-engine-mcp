@@ -21,7 +21,7 @@ except ImportError:
 
 def _safe_spawn_mansion_actor(unreal, params):
     """Helper function to safely spawn mansion actors and track results."""
-    resp = safe_spawn_actor(unreal, params)
+    resp = safe_spawn_actor(unreal, params, auto_unique_name=True)
     return resp
 
 

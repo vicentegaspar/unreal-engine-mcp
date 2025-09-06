@@ -19,7 +19,7 @@ except ImportError:
 
 def _safe_spawn_castle_actor(unreal, params):
     """Helper function to safely spawn castle actors and track results."""
-    resp = safe_spawn_actor(unreal, params)
+    resp = safe_spawn_actor(unreal, params, auto_unique_name=True)
     return resp
 
 
