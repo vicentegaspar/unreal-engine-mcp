@@ -34,11 +34,7 @@ from helpers.mansion_creation import (
 )
 from helpers.actor_utilities import spawn_blueprint_actor, get_blueprint_material_info
 from helpers.actor_name_manager import (
-    get_unique_actor_name, safe_spawn_actor, safe_delete_actor
-)
-from helpers.tower_creation import (
-    get_tower_color_palette, assign_tower_piece_color, create_spiral_tower_pieces,
-    create_decorative_tower_elements, create_tower_blueprints_and_batch_spawn
+    safe_spawn_actor, safe_delete_actor
 )
 
 # Configure logging with more detailed format
