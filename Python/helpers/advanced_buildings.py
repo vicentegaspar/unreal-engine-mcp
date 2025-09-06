@@ -19,11 +19,9 @@ except ImportError:
     def safe_spawn_actor(unreal_connection, params, auto_unique_name=True):
         return unreal_connection.send_command("spawn_actor", params)
 
-def _safe_spawn_building_actor(unreal, params, results):
+def _safe_spawn_building_actor(unreal, params):
     """Helper function to safely spawn building actors and track results."""
     resp = safe_spawn_actor(unreal, params)
-    if resp and resp.get("success"):
-        results.append(resp)
     return resp
 
 
@@ -50,7 +48,7 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
             "scale": [(base_width + 200)/100.0, (base_depth + 200)/100.0, 0.6],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if foundation_result and foundation_result.get("status") == "success":
+        if foundation_result and foundation_result.get("success"):
             actors.append(foundation_result.get("result"))
         
         # Create main tower in sections for tapering effect
@@ -78,7 +76,7 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
                 "scale": [current_width/100.0, current_depth/100.0, section_height/100.0],
                 "static_mesh": "/Engine/BasicShapes/Cube.Cube"
             })
-            if section_result and section_result.get("status") == "success":
+            if section_result and section_result.get("success"):
                 actors.append(section_result.get("result"))
             
             # Add setback/balcony every few floors
@@ -90,7 +88,7 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
                     "scale": [(current_width + 100)/100.0, (current_depth + 100)/100.0, 0.5],
                     "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                 })
-                if balcony_result and balcony_result.get("status") == "success":
+                if balcony_result and balcony_result.get("success"):
                     actors.append(balcony_result.get("result"))
             
             current_height += section_height
@@ -104,7 +102,7 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
             "scale": [0.2, 0.2, 6.0],
             "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
         })
-        if spire_result and spire_result.get("status") == "success":
+        if spire_result and spire_result.get("success"):
             actors.append(spire_result.get("result"))
         
         # Rooftop equipment
@@ -118,7 +116,7 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
                 "scale": [1.0, 1.0, 1.0],
                 "static_mesh": "/Engine/BasicShapes/Cube.Cube"
             })
-            if equipment_result and equipment_result.get("status") == "success":
+            if equipment_result and equipment_result.get("success"):
                 actors.append(equipment_result.get("result"))
         
         return {"success": True, "actors": actors}
@@ -150,7 +148,7 @@ def _create_office_tower(floors: int, width: float, depth: float, location: List
             "scale": [(width + 100)/100.0, (depth + 100)/100.0, 0.3],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if foundation_result and foundation_result.get("status") == "success":
+        if foundation_result and foundation_result.get("success"):
             actors.append(foundation_result.get("result"))
         
         # Lobby (taller first floor)
@@ -162,7 +160,7 @@ def _create_office_tower(floors: int, width: float, depth: float, location: List
             "scale": [width/100.0, depth/100.0, lobby_height/100.0],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if lobby_result and lobby_result.get("status") == "success":
+        if lobby_result and lobby_result.get("success"):
             actors.append(lobby_result.get("result"))
         
         # Main tower
@@ -174,7 +172,7 @@ def _create_office_tower(floors: int, width: float, depth: float, location: List
             "scale": [width/100.0, depth/100.0, tower_height/100.0],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if tower_result and tower_result.get("status") == "success":
+        if tower_result and tower_result.get("success"):
             actors.append(tower_result.get("result"))
         
         # Add window bands every few floors for glass facade effect
@@ -187,7 +185,7 @@ def _create_office_tower(floors: int, width: float, depth: float, location: List
                 "scale": [(width + 20)/100.0, (depth + 20)/100.0, 0.2],
                 "static_mesh": "/Engine/BasicShapes/Cube.Cube"
             })
-            if band_result and band_result.get("status") == "success":
+            if band_result and band_result.get("success"):
                 actors.append(band_result.get("result"))
         
         # Rooftop
@@ -199,7 +197,7 @@ def _create_office_tower(floors: int, width: float, depth: float, location: List
             "scale": [(width - 100)/100.0, (depth - 100)/100.0, 0.6],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if rooftop_result and rooftop_result.get("status") == "success":
+        if rooftop_result and rooftop_result.get("success"):
             actors.append(rooftop_result.get("result"))
         
         return {"success": True, "actors": actors}
@@ -233,7 +231,7 @@ def _create_apartment_complex(floors: int, units_per_floor: int, location: List[
             "scale": [(width + 100)/100.0, (depth + 100)/100.0, 0.3],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if foundation_result and foundation_result.get("status") == "success":
+        if foundation_result and foundation_result.get("success"):
             actors.append(foundation_result.get("result"))
         
         # Main building
@@ -245,7 +243,7 @@ def _create_apartment_complex(floors: int, units_per_floor: int, location: List[
             "scale": [width/100.0, depth/100.0, building_height/100.0],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if building_result and building_result.get("status") == "success":
+        if building_result and building_result.get("success"):
             actors.append(building_result.get("result"))
         
         # Add balconies on front and back
@@ -260,7 +258,7 @@ def _create_apartment_complex(floors: int, units_per_floor: int, location: List[
                 "scale": [width/100.0, 1.0, 0.2],
                 "static_mesh": "/Engine/BasicShapes/Cube.Cube"
             })
-            if front_balcony_result and front_balcony_result.get("status") == "success":
+            if front_balcony_result and front_balcony_result.get("success"):
                 actors.append(front_balcony_result.get("result"))
             
             # Back balconies
@@ -271,7 +269,7 @@ def _create_apartment_complex(floors: int, units_per_floor: int, location: List[
                 "scale": [width/100.0, 1.0, 0.2],
                 "static_mesh": "/Engine/BasicShapes/Cube.Cube"
             })
-            if back_balcony_result and back_balcony_result.get("status") == "success":
+            if back_balcony_result and back_balcony_result.get("success"):
                 actors.append(back_balcony_result.get("result"))
         
         # Rooftop
@@ -282,7 +280,7 @@ def _create_apartment_complex(floors: int, units_per_floor: int, location: List[
             "scale": [(width + 50)/100.0, (depth + 50)/100.0, 0.3],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if rooftop_result and rooftop_result.get("status") == "success":
+        if rooftop_result and rooftop_result.get("success"):
             actors.append(rooftop_result.get("result"))
         
         return {"success": True, "actors": actors}
@@ -314,7 +312,7 @@ def _create_shopping_mall(width: float, depth: float, floors: int, location: Lis
             "scale": [(width + 200)/100.0, (depth + 200)/100.0, 0.4],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if foundation_result and foundation_result.get("status") == "success":
+        if foundation_result and foundation_result.get("success"):
             actors.append(foundation_result.get("result"))
         
         # Main structure
@@ -326,7 +324,7 @@ def _create_shopping_mall(width: float, depth: float, floors: int, location: Lis
             "scale": [width/100.0, depth/100.0, mall_height/100.0],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if main_result and main_result.get("status") == "success":
+        if main_result and main_result.get("success"):
             actors.append(main_result.get("result"))
         
         # Entrance canopy
@@ -337,7 +335,7 @@ def _create_shopping_mall(width: float, depth: float, floors: int, location: Lis
             "scale": [width/100.0 * 0.8, 3.0, 0.3],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if canopy_result and canopy_result.get("status") == "success":
+        if canopy_result and canopy_result.get("success"):
             actors.append(canopy_result.get("result"))
         
         # Entrance pillars
@@ -349,7 +347,7 @@ def _create_shopping_mall(width: float, depth: float, floors: int, location: Lis
                 "scale": [0.5, 0.5, floor_height/100.0],
                 "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
             })
-            if pillar_result and pillar_result.get("status") == "success":
+            if pillar_result and pillar_result.get("success"):
                 actors.append(pillar_result.get("result"))
         
         # Rooftop parking deck indicator
@@ -360,7 +358,7 @@ def _create_shopping_mall(width: float, depth: float, floors: int, location: Lis
             "scale": [width/100.0 * 0.9, depth/100.0 * 0.9, 0.2],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if parking_result and parking_result.get("status") == "success":
+        if parking_result and parking_result.get("success"):
             actors.append(parking_result.get("result"))
         
         return {"success": True, "actors": actors}
@@ -392,7 +390,7 @@ def _create_parking_garage(levels: int, width: float, depth: float, location: Li
             "scale": [(width + 50)/100.0, (depth + 50)/100.0, 0.3],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if foundation_result and foundation_result.get("status") == "success":
+        if foundation_result and foundation_result.get("success"):
             actors.append(foundation_result.get("result"))
         
         # Create each level with open sides
@@ -407,7 +405,7 @@ def _create_parking_garage(levels: int, width: float, depth: float, location: Li
                 "scale": [width/100.0, depth/100.0, 0.2],
                 "static_mesh": "/Engine/BasicShapes/Cube.Cube"
             })
-            if floor_result and floor_result.get("status") == "success":
+            if floor_result and floor_result.get("success"):
                 actors.append(floor_result.get("result"))
             
             # Support pillars
@@ -420,7 +418,7 @@ def _create_parking_garage(levels: int, width: float, depth: float, location: Li
                         "scale": [0.4, 0.4, level_height/100.0],
                         "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                     })
-                    if pillar_result and pillar_result.get("status") == "success":
+                    if pillar_result and pillar_result.get("success"):
                         actors.append(pillar_result.get("result"))
             
             # Side barriers (partial walls)
@@ -446,7 +444,7 @@ def _create_parking_garage(levels: int, width: float, depth: float, location: Li
                         "scale": barrier_scale,
                         "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                     })
-                    if barrier_result and barrier_result.get("status") == "success":
+                    if barrier_result and barrier_result.get("success"):
                         actors.append(barrier_result.get("result"))
         
         # Ramp structure (simplified)
@@ -457,7 +455,7 @@ def _create_parking_garage(levels: int, width: float, depth: float, location: Li
             "scale": [1.5, 2.0, levels * level_height/100.0],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if ramp_result and ramp_result.get("status") == "success":
+        if ramp_result and ramp_result.get("success"):
             actors.append(ramp_result.get("result"))
         
         return {"success": True, "actors": actors}
@@ -489,7 +487,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
             "scale": [(width + 150)/100.0, (depth + 150)/100.0, 0.4],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if foundation_result and foundation_result.get("status") == "success":
+        if foundation_result and foundation_result.get("success"):
             actors.append(foundation_result.get("result"))
         
         # Lobby (extra tall)
@@ -501,7 +499,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
             "scale": [width/100.0, depth/100.0, lobby_height/100.0],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if lobby_result and lobby_result.get("status") == "success":
+        if lobby_result and lobby_result.get("success"):
             actors.append(lobby_result.get("result"))
         
         # Main tower
@@ -513,7 +511,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
             "scale": [width/100.0 * 0.9, depth/100.0 * 0.9, tower_height/100.0],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if tower_result and tower_result.get("status") == "success":
+        if tower_result and tower_result.get("success"):
             actors.append(tower_result.get("result"))
         
         # Penthouse (top floor wider)
@@ -525,7 +523,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
             "scale": [width/100.0, depth/100.0, floor_height/100.0],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if penthouse_result and penthouse_result.get("status") == "success":
+        if penthouse_result and penthouse_result.get("success"):
             actors.append(penthouse_result.get("result"))
         
         # Rooftop pool area
@@ -536,7 +534,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
             "scale": [width/100.0 * 0.5, depth/100.0 * 0.3, 0.2],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if pool_result and pool_result.get("status") == "success":
+        if pool_result and pool_result.get("success"):
             actors.append(pool_result.get("result"))
         
         # Entrance canopy
@@ -547,7 +545,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
             "scale": [width/100.0 * 0.6, 2.0, 0.2],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if canopy_result and canopy_result.get("status") == "success":
+        if canopy_result and canopy_result.get("success"):
             actors.append(canopy_result.get("result"))
         
         return {"success": True, "actors": actors}
@@ -579,7 +577,7 @@ def _create_restaurant(width: float, depth: float, location: List[float], name_p
             "scale": [(width + 50)/100.0, (depth + 50)/100.0, 0.2],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if foundation_result and foundation_result.get("status") == "success":
+        if foundation_result and foundation_result.get("success"):
             actors.append(foundation_result.get("result"))
         
         # Main building
@@ -590,7 +588,7 @@ def _create_restaurant(width: float, depth: float, location: List[float], name_p
             "scale": [width/100.0, depth/100.0, height/100.0],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if main_result and main_result.get("status") == "success":
+        if main_result and main_result.get("success"):
             actors.append(main_result.get("result"))
         
         # Outdoor seating area (patio)
@@ -601,7 +599,7 @@ def _create_restaurant(width: float, depth: float, location: List[float], name_p
             "scale": [width/100.0, 1.5, 0.1],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if patio_result and patio_result.get("status") == "success":
+        if patio_result and patio_result.get("success"):
             actors.append(patio_result.get("result"))
         
         # Awning
@@ -612,7 +610,7 @@ def _create_restaurant(width: float, depth: float, location: List[float], name_p
             "scale": [width/100.0 * 1.2, 1.0, 0.1],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if awning_result and awning_result.get("status") == "success":
+        if awning_result and awning_result.get("success"):
             actors.append(awning_result.get("result"))
         
         return {"success": True, "actors": actors}
@@ -644,7 +642,7 @@ def _create_store(width: float, depth: float, location: List[float], name_prefix
             "scale": [(width + 30)/100.0, (depth + 30)/100.0, 0.2],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if foundation_result and foundation_result.get("status") == "success":
+        if foundation_result and foundation_result.get("success"):
             actors.append(foundation_result.get("result"))
         
         # Main building
@@ -655,7 +653,7 @@ def _create_store(width: float, depth: float, location: List[float], name_prefix
             "scale": [width/100.0, depth/100.0, height/100.0],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if main_result and main_result.get("status") == "success":
+        if main_result and main_result.get("success"):
             actors.append(main_result.get("result"))
         
         # Storefront sign
@@ -666,7 +664,7 @@ def _create_store(width: float, depth: float, location: List[float], name_prefix
             "scale": [width/100.0 * 0.8, 0.1, 0.4],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if sign_result and sign_result.get("status") == "success":
+        if sign_result and sign_result.get("success"):
             actors.append(sign_result.get("result"))
         
         return {"success": True, "actors": actors}
@@ -698,7 +696,7 @@ def _create_apartment_building(floors: int, width: float, depth: float, location
             "scale": [(width + 50)/100.0, (depth + 50)/100.0, 0.3],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if foundation_result and foundation_result.get("status") == "success":
+        if foundation_result and foundation_result.get("success"):
             actors.append(foundation_result.get("result"))
         
         # Main building
@@ -710,7 +708,7 @@ def _create_apartment_building(floors: int, width: float, depth: float, location
             "scale": [width/100.0, depth/100.0, building_height/100.0],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if building_result and building_result.get("status") == "success":
+        if building_result and building_result.get("success"):
             actors.append(building_result.get("result"))
         
         # Entry steps
@@ -721,7 +719,7 @@ def _create_apartment_building(floors: int, width: float, depth: float, location
             "scale": [width/100.0 * 0.3, 0.6, 0.2],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if steps_result and steps_result.get("status") == "success":
+        if steps_result and steps_result.get("success"):
             actors.append(steps_result.get("result"))
         
         # Simple roof
@@ -732,7 +730,7 @@ def _create_apartment_building(floors: int, width: float, depth: float, location
             "scale": [(width + 20)/100.0, (depth + 20)/100.0, 0.3],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if roof_result and roof_result.get("status") == "success":
+        if roof_result and roof_result.get("success"):
             actors.append(roof_result.get("result"))
         
         return {"success": True, "actors": actors}

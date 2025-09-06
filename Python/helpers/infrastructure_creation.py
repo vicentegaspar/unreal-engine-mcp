@@ -19,11 +19,9 @@ except ImportError:
     def safe_spawn_actor(unreal_connection, params, auto_unique_name=True):
         return unreal_connection.send_command("spawn_actor", params)
 
-def _safe_spawn_infrastructure_actor(unreal, params, results):
+def _safe_spawn_infrastructure_actor(unreal, params):
     """Helper function to safely spawn infrastructure actors and track results."""
     resp = safe_spawn_actor(unreal, params)
-    if resp and resp.get("success"):
-        results.append(resp)
     return resp
 
 
@@ -57,7 +55,7 @@ def _create_street_grid(blocks: int, block_size: float, street_width: float, loc
                 })
                 
                 # Scale the street segment
-                if result and result.get("status") == "success":
+                if result and result.get("success"):
                     set_actor_transform(
                         actor_name,
                         scale=[block_size/100.0 * 0.7, street_width/100.0, 0.1]
@@ -80,7 +78,7 @@ def _create_street_grid(blocks: int, block_size: float, street_width: float, loc
                 })
                 
                 # Scale the street segment
-                if result and result.get("status") == "success":
+                if result and result.get("success"):
                     set_actor_transform(
                         actor_name,
                         scale=[street_width/100.0, block_size/100.0 * 0.7, 0.1]
@@ -126,7 +124,7 @@ def _create_street_lights(blocks: int, block_size: float, location: List[float],
                     "type": "StaticMeshActor", 
                     "location": [light_x, light_y, location[2] + 200]
                 })
-                if pole_result and pole_result.get("status") == "success":
+                if pole_result and pole_result.get("success"):
                     set_actor_transform(pole_name, scale=[0.2, 0.2, 4.0])
                     lights.append(pole_result.get("result"))
                 
@@ -137,7 +135,7 @@ def _create_street_lights(blocks: int, block_size: float, location: List[float],
                     "type": "StaticMeshActor",
                     "location": [light_x, light_y, location[2] + 380]
                 })
-                if light_result and light_result.get("status") == "success":
+                if light_result and light_result.get("success"):
                     set_actor_transform(light_name, scale=[0.3, 0.3, 0.3])
                     lights.append(light_result.get("result"))
         
@@ -176,7 +174,7 @@ def _create_town_vehicles(blocks: int, block_size: float, street_width: float, l
                 "location": [street_x, street_y, location[2] + 50]
             })
             
-            if car_result and car_result.get("status") == "success":
+            if car_result and car_result.get("success"):
                 # Scale to car proportions
                 set_actor_transform(car_name, scale=[4.0, 2.0, 1.5])
                 vehicles.append(car_result.get("result"))
@@ -222,7 +220,7 @@ def _create_town_decorations(blocks: int, block_size: float, location: List[floa
                     "type": "StaticMeshActor",
                     "location": [tree_x, tree_y, location[2] + 150]
                 })
-                if trunk_result and trunk_result.get("status") == "success":
+                if trunk_result and trunk_result.get("success"):
                     set_actor_transform(trunk_name, scale=[0.5, 0.5, 3.0])
                     decorations.append(trunk_result.get("result"))
                 
@@ -233,7 +231,7 @@ def _create_town_decorations(blocks: int, block_size: float, location: List[floa
                     "type": "StaticMeshActor",
                     "location": [tree_x, tree_y, location[2] + 350]
                 })
-                if leaves_result and leaves_result.get("status") == "success":
+                if leaves_result and leaves_result.get("success"):
                     set_actor_transform(leaves_name, scale=[2.0, 2.0, 2.0])
                     decorations.append(leaves_result.get("result"))
         
@@ -282,7 +280,7 @@ def _create_traffic_lights(blocks: int, block_size: float, location: List[float]
                         "scale": [0.15, 0.15, 3.0],
                         "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
                     })
-                    if pole_result and pole_result.get("status") == "success":
+                    if pole_result and pole_result.get("success"):
                         traffic_lights.append(pole_result.get("result"))
                     
                     # Traffic light box
@@ -294,7 +292,7 @@ def _create_traffic_lights(blocks: int, block_size: float, location: List[float]
                         "scale": [0.3, 0.2, 0.8],
                         "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                     })
-                    if light_result and light_result.get("status") == "success":
+                    if light_result and light_result.get("success"):
                         traffic_lights.append(light_result.get("result"))
         
         return {"success": True, "actors": traffic_lights}
@@ -338,7 +336,7 @@ def _create_street_signage(blocks: int, block_size: float, location: List[float]
                     "scale": [0.1, 0.1, 2.0],
                     "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
                 })
-                if pole_result and pole_result.get("status") == "success":
+                if pole_result and pole_result.get("success"):
                     signage.append(pole_result.get("result"))
                 
                 # Sign
@@ -350,7 +348,7 @@ def _create_street_signage(blocks: int, block_size: float, location: List[float]
                     "scale": [1.5, 0.05, 0.3],
                     "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                 })
-                if sign_result and sign_result.get("status") == "success":
+                if sign_result and sign_result.get("success"):
                     signage.append(sign_result.get("result"))
         
         # Billboards for larger towns
@@ -369,7 +367,7 @@ def _create_street_signage(blocks: int, block_size: float, location: List[float]
                     "scale": [3.0, 0.1, 2.0],
                     "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                 })
-                if billboard_result and billboard_result.get("status") == "success":
+                if billboard_result and billboard_result.get("success"):
                     signage.append(billboard_result.get("result"))
                 
                 # Billboard supports
@@ -382,7 +380,7 @@ def _create_street_signage(blocks: int, block_size: float, location: List[float]
                         "scale": [0.2, 0.2, 4.0],
                         "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
                     })
-                    if support_result and support_result.get("status") == "success":
+                    if support_result and support_result.get("success"):
                         signage.append(support_result.get("result"))
         
         return {"success": True, "actors": signage}
@@ -421,7 +419,7 @@ def _create_sidewalks_crosswalks(blocks: int, block_size: float, street_width: f
                     "scale": [block_size/100.0 * 0.7, sidewalk_width/100.0, 0.05],
                     "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                 })
-                if north_sidewalk_result and north_sidewalk_result.get("status") == "success":
+                if north_sidewalk_result and north_sidewalk_result.get("success"):
                     sidewalks.append(north_sidewalk_result.get("result"))
                 
                 # South sidewalk
@@ -432,7 +430,7 @@ def _create_sidewalks_crosswalks(blocks: int, block_size: float, street_width: f
                     "scale": [block_size/100.0 * 0.7, sidewalk_width/100.0, 0.05],
                     "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                 })
-                if south_sidewalk_result and south_sidewalk_result.get("status") == "success":
+                if south_sidewalk_result and south_sidewalk_result.get("success"):
                     sidewalks.append(south_sidewalk_result.get("result"))
         
         # Vertical sidewalks
@@ -449,7 +447,7 @@ def _create_sidewalks_crosswalks(blocks: int, block_size: float, street_width: f
                     "scale": [sidewalk_width/100.0, block_size/100.0 * 0.7, 0.05],
                     "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                 })
-                if east_sidewalk_result and east_sidewalk_result.get("status") == "success":
+                if east_sidewalk_result and east_sidewalk_result.get("success"):
                     sidewalks.append(east_sidewalk_result.get("result"))
                 
                 # West sidewalk
@@ -460,7 +458,7 @@ def _create_sidewalks_crosswalks(blocks: int, block_size: float, street_width: f
                     "scale": [sidewalk_width/100.0, block_size/100.0 * 0.7, 0.05],
                     "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                 })
-                if west_sidewalk_result and west_sidewalk_result.get("status") == "success":
+                if west_sidewalk_result and west_sidewalk_result.get("success"):
                     sidewalks.append(west_sidewalk_result.get("result"))
         
         # Create crosswalks at intersections
@@ -482,7 +480,7 @@ def _create_sidewalks_crosswalks(blocks: int, block_size: float, street_width: f
                         "scale": [0.3, crosswalk_width/100.0, 0.02],
                         "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                     })
-                    if ns_crosswalk_result and ns_crosswalk_result.get("status") == "success":
+                    if ns_crosswalk_result and ns_crosswalk_result.get("success"):
                         sidewalks.append(ns_crosswalk_result.get("result"))
                     
                     # East-West crosswalk
@@ -493,7 +491,7 @@ def _create_sidewalks_crosswalks(blocks: int, block_size: float, street_width: f
                         "scale": [crosswalk_width/100.0, 0.3, 0.02],
                         "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                     })
-                    if ew_crosswalk_result and ew_crosswalk_result.get("status") == "success":
+                    if ew_crosswalk_result and ew_crosswalk_result.get("success"):
                         sidewalks.append(ew_crosswalk_result.get("result"))
         
         return {"success": True, "actors": sidewalks}
@@ -546,7 +544,7 @@ def _create_urban_furniture(blocks: int, block_size: float, location: List[float
                     "scale": [1.5, 0.5, 0.6],
                     "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                 })
-                if bench_result and bench_result.get("status") == "success":
+                if bench_result and bench_result.get("success"):
                     furniture.append(bench_result.get("result"))
                 
                 # Bench supports
@@ -559,7 +557,7 @@ def _create_urban_furniture(blocks: int, block_size: float, location: List[float
                         "scale": [0.1, 0.5, 0.3],
                         "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                     })
-                    if support_result and support_result.get("status") == "success":
+                    if support_result and support_result.get("success"):
                         furniture.append(support_result.get("result"))
             
             elif furniture_type == "trash":
@@ -572,7 +570,7 @@ def _create_urban_furniture(blocks: int, block_size: float, location: List[float
                     "scale": [0.4, 0.4, 0.8],
                     "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
                 })
-                if trash_result and trash_result.get("status") == "success":
+                if trash_result and trash_result.get("success"):
                     furniture.append(trash_result.get("result"))
             
             else:  # bus_stop
@@ -585,7 +583,7 @@ def _create_urban_furniture(blocks: int, block_size: float, location: List[float
                     "scale": [2.0, 1.0, 0.1],
                     "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                 })
-                if shelter_result and shelter_result.get("status") == "success":
+                if shelter_result and shelter_result.get("success"):
                     furniture.append(shelter_result.get("result"))
                 
                 # Bus stop posts
@@ -598,7 +596,7 @@ def _create_urban_furniture(blocks: int, block_size: float, location: List[float
                         "scale": [0.1, 0.1, 1.2],
                         "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
                     })
-                    if post_result and post_result.get("status") == "success":
+                    if post_result and post_result.get("success"):
                         furniture.append(post_result.get("result"))
                 
                 # Bus stop bench
@@ -610,7 +608,7 @@ def _create_urban_furniture(blocks: int, block_size: float, location: List[float
                     "scale": [1.8, 0.4, 0.5],
                     "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                 })
-                if bench_result and bench_result.get("status") == "success":
+                if bench_result and bench_result.get("success"):
                     furniture.append(bench_result.get("result"))
         
         return {"success": True, "actors": furniture}
@@ -656,7 +654,7 @@ def _create_street_utilities(blocks: int, block_size: float, location: List[floa
                 "scale": [0.15, 0.15, 1.0],
                 "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
             })
-            if meter_result and meter_result.get("status") == "success":
+            if meter_result and meter_result.get("success"):
                 utilities.append(meter_result.get("result"))
             
             # Meter head
@@ -668,7 +666,7 @@ def _create_street_utilities(blocks: int, block_size: float, location: List[floa
                 "scale": [0.25, 0.15, 0.3],
                 "static_mesh": "/Engine/BasicShapes/Cube.Cube"
             })
-            if head_result and head_result.get("status") == "success":
+            if head_result and head_result.get("success"):
                 utilities.append(head_result.get("result"))
         
         # Fire hydrants at corners
@@ -686,7 +684,7 @@ def _create_street_utilities(blocks: int, block_size: float, location: List[floa
                 "scale": [0.3, 0.3, 0.8],
                 "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
             })
-            if hydrant_result and hydrant_result.get("status") == "success":
+            if hydrant_result and hydrant_result.get("success"):
                 utilities.append(hydrant_result.get("result"))
             
             # Hydrant cap
@@ -698,7 +696,7 @@ def _create_street_utilities(blocks: int, block_size: float, location: List[floa
                 "scale": [0.35, 0.35, 0.1],
                 "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
             })
-            if cap_result and cap_result.get("status") == "success":
+            if cap_result and cap_result.get("success"):
                 utilities.append(cap_result.get("result"))
         
         return {"success": True, "actors": utilities}
@@ -731,7 +729,7 @@ def _create_central_plaza(blocks: int, block_size: float, location: List[float],
             "scale": [plaza_size/100.0, plaza_size/100.0, 0.05],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if plaza_floor_result and plaza_floor_result.get("status") == "success":
+        if plaza_floor_result and plaza_floor_result.get("success"):
             plaza.append(plaza_floor_result.get("result"))
         
         # Central fountain base
@@ -742,7 +740,7 @@ def _create_central_plaza(blocks: int, block_size: float, location: List[float],
             "scale": [3.0, 3.0, 0.2],
             "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
         })
-        if fountain_base_result and fountain_base_result.get("status") == "success":
+        if fountain_base_result and fountain_base_result.get("success"):
             plaza.append(fountain_base_result.get("result"))
         
         # Fountain center
@@ -753,7 +751,7 @@ def _create_central_plaza(blocks: int, block_size: float, location: List[float],
             "scale": [0.5, 0.5, 0.8],
             "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
         })
-        if fountain_center_result and fountain_center_result.get("status") == "success":
+        if fountain_center_result and fountain_center_result.get("success"):
             plaza.append(fountain_center_result.get("result"))
         
         # Fountain top
@@ -764,7 +762,7 @@ def _create_central_plaza(blocks: int, block_size: float, location: List[float],
             "scale": [1.5, 1.5, 0.1],
             "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
         })
-        if fountain_top_result and fountain_top_result.get("status") == "success":
+        if fountain_top_result and fountain_top_result.get("success"):
             plaza.append(fountain_top_result.get("result"))
         
         # Monument/statue
@@ -775,7 +773,7 @@ def _create_central_plaza(blocks: int, block_size: float, location: List[float],
             "scale": [1.0, 1.0, 2.0],
             "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
         })
-        if monument_result and monument_result.get("status") == "success":
+        if monument_result and monument_result.get("success"):
             plaza.append(monument_result.get("result"))
         
         # Monument base
@@ -786,7 +784,7 @@ def _create_central_plaza(blocks: int, block_size: float, location: List[float],
             "scale": [2.0, 2.0, 0.6],
             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
         })
-        if monument_base_result and monument_base_result.get("status") == "success":
+        if monument_base_result and monument_base_result.get("success"):
             plaza.append(monument_base_result.get("result"))
         
         # Plaza benches in circle
@@ -806,7 +804,7 @@ def _create_central_plaza(blocks: int, block_size: float, location: List[float],
                 "scale": [1.5, 0.5, 0.6],
                 "static_mesh": "/Engine/BasicShapes/Cube.Cube"
             })
-            if bench_result and bench_result.get("status") == "success":
+            if bench_result and bench_result.get("success"):
                 plaza.append(bench_result.get("result"))
         
         # Decorative light posts around plaza
@@ -825,7 +823,7 @@ def _create_central_plaza(blocks: int, block_size: float, location: List[float],
                 "scale": [0.15, 0.15, 2.0],
                 "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
             })
-            if post_result and post_result.get("status") == "success":
+            if post_result and post_result.get("success"):
                 plaza.append(post_result.get("result"))
             
             # Light fixture
@@ -837,7 +835,7 @@ def _create_central_plaza(blocks: int, block_size: float, location: List[float],
                 "scale": [0.4, 0.4, 0.3],
                 "static_mesh": "/Engine/BasicShapes/Sphere.Sphere"
             })
-            if light_result and light_result.get("status") == "success":
+            if light_result and light_result.get("success"):
                 plaza.append(light_result.get("result"))
         
         return {"success": True, "actors": plaza}
