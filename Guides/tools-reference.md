@@ -106,14 +106,6 @@ Generate solvable mazes using recursive backtracking algorithm.
 create_maze(rows=12, cols=12, wall_height=4, cell_size=250, location=[0, 0, 0])
 ```
 
-### create_obstacle_course
-Generate pillar-based obstacle courses for navigation challenges.
-
-**Parameters:**
-- `checkpoints` (int): Number of obstacle pillars (default: 5)
-- `spacing` (float): Distance between obstacles in cm (default: 500)
-- `location` (array): Course starting position
-
 ### create_pyramid
 Build stepped pyramids from stacked blocks.
 
