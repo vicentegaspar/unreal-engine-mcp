@@ -11,6 +11,21 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 logger = logging.getLogger(__name__)
 
+# Import safe spawning functions
+try:
+    from .actor_name_manager import safe_spawn_actor
+except ImportError:
+    logger.warning("Could not import actor_name_manager, using fallback spawning")
+    def safe_spawn_actor(unreal_connection, params, auto_unique_name=True):
+        return unreal_connection.send_command("spawn_actor", params)
+
+def _safe_spawn_building_actor(unreal, params, results):
+    """Helper function to safely spawn building actors and track results."""
+    resp = safe_spawn_actor(unreal, params)
+    if resp and resp.get("success"):
+        results.append(resp)
+    return resp
+
 
 def _create_skyscraper(height: int, base_width: float, base_depth: float, location: List[float], name_prefix: str) -> Dict[str, Any]:
     """Create an impressive skyscraper with multiple sections and details."""
@@ -28,7 +43,7 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
         floor_height = 150.0  # Standard floor height
         
         # Create foundation
-        foundation_result = unreal.send_command("spawn_actor", {
+        foundation_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Foundation",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] - 30],
@@ -56,7 +71,7 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
             
             # Create main structure for this section
             section_height = section_floors * floor_height
-            section_result = unreal.send_command("spawn_actor", {
+            section_result = _safe_spawn_building_actor(unreal, {
                 "name": f"{name_prefix}_Section_{section}",
                 "type": "StaticMeshActor",
                 "location": [location[0], location[1], current_height + section_height/2],
@@ -68,7 +83,7 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
             
             # Add setback/balcony every few floors
             if section < sections - 1:
-                balcony_result = unreal.send_command("spawn_actor", {
+                balcony_result = _safe_spawn_building_actor(unreal, {
                     "name": f"{name_prefix}_Balcony_{section}",
                     "type": "StaticMeshActor",
                     "location": [location[0], location[1], current_height + section_height - 25],
@@ -82,7 +97,7 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
         
         # Add rooftop features
         # Antenna/spire
-        spire_result = unreal.send_command("spawn_actor", {
+        spire_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Spire",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], current_height + 300],
@@ -96,7 +111,7 @@ def _create_skyscraper(height: int, base_width: float, base_depth: float, locati
         for i in range(3):
             equipment_x = location[0] + random.uniform(-current_width/4, current_width/4)
             equipment_y = location[1] + random.uniform(-current_depth/4, current_depth/4)
-            equipment_result = unreal.send_command("spawn_actor", {
+            equipment_result = _safe_spawn_building_actor(unreal, {
                 "name": f"{name_prefix}_RoofEquipment_{i}",
                 "type": "StaticMeshActor",
                 "location": [equipment_x, equipment_y, current_height + 50],
@@ -128,7 +143,7 @@ def _create_office_tower(floors: int, width: float, depth: float, location: List
         floor_height = 140.0
         
         # Foundation
-        foundation_result = unreal.send_command("spawn_actor", {
+        foundation_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Foundation",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] - 15],
@@ -140,7 +155,7 @@ def _create_office_tower(floors: int, width: float, depth: float, location: List
         
         # Lobby (taller first floor)
         lobby_height = floor_height * 1.5
-        lobby_result = unreal.send_command("spawn_actor", {
+        lobby_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Lobby",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + lobby_height/2],
@@ -152,7 +167,7 @@ def _create_office_tower(floors: int, width: float, depth: float, location: List
         
         # Main tower
         tower_height = (floors - 1) * floor_height
-        tower_result = unreal.send_command("spawn_actor", {
+        tower_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Tower",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + lobby_height + tower_height/2],
@@ -165,7 +180,7 @@ def _create_office_tower(floors: int, width: float, depth: float, location: List
         # Add window bands every few floors for glass facade effect
         for floor in range(2, floors, 3):
             band_height = location[2] + lobby_height + (floor - 1) * floor_height
-            band_result = unreal.send_command("spawn_actor", {
+            band_result = _safe_spawn_building_actor(unreal, {
                 "name": f"{name_prefix}_WindowBand_{floor}",
                 "type": "StaticMeshActor",
                 "location": [location[0], location[1], band_height],
@@ -177,7 +192,7 @@ def _create_office_tower(floors: int, width: float, depth: float, location: List
         
         # Rooftop
         rooftop_height = location[2] + lobby_height + tower_height
-        rooftop_result = unreal.send_command("spawn_actor", {
+        rooftop_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Rooftop",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], rooftop_height + 30],
@@ -211,7 +226,7 @@ def _create_apartment_complex(floors: int, units_per_floor: int, location: List[
         depth = 800
         
         # Foundation
-        foundation_result = unreal.send_command("spawn_actor", {
+        foundation_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Foundation",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] - 15],
@@ -223,7 +238,7 @@ def _create_apartment_complex(floors: int, units_per_floor: int, location: List[
         
         # Main building
         building_height = floors * floor_height
-        building_result = unreal.send_command("spawn_actor", {
+        building_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Building",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + building_height/2],
@@ -238,7 +253,7 @@ def _create_apartment_complex(floors: int, units_per_floor: int, location: List[
             balcony_height = location[2] + floor * floor_height - 20
             
             # Front balconies
-            front_balcony_result = unreal.send_command("spawn_actor", {
+            front_balcony_result = _safe_spawn_building_actor(unreal, {
                 "name": f"{name_prefix}_FrontBalcony_{floor}",
                 "type": "StaticMeshActor",
                 "location": [location[0], location[1] - depth/2 - 50, balcony_height],
@@ -249,7 +264,7 @@ def _create_apartment_complex(floors: int, units_per_floor: int, location: List[
                 actors.append(front_balcony_result.get("result"))
             
             # Back balconies
-            back_balcony_result = unreal.send_command("spawn_actor", {
+            back_balcony_result = _safe_spawn_building_actor(unreal, {
                 "name": f"{name_prefix}_BackBalcony_{floor}",
                 "type": "StaticMeshActor",
                 "location": [location[0], location[1] + depth/2 + 50, balcony_height],
@@ -260,7 +275,7 @@ def _create_apartment_complex(floors: int, units_per_floor: int, location: List[
                 actors.append(back_balcony_result.get("result"))
         
         # Rooftop
-        rooftop_result = unreal.send_command("spawn_actor", {
+        rooftop_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Rooftop",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + building_height + 15],
@@ -292,7 +307,7 @@ def _create_shopping_mall(width: float, depth: float, floors: int, location: Lis
         floor_height = 200.0  # Tall ceilings for retail
         
         # Foundation
-        foundation_result = unreal.send_command("spawn_actor", {
+        foundation_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Foundation",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] - 20],
@@ -304,7 +319,7 @@ def _create_shopping_mall(width: float, depth: float, floors: int, location: Lis
         
         # Main structure
         mall_height = floors * floor_height
-        main_result = unreal.send_command("spawn_actor", {
+        main_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Main",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + mall_height/2],
@@ -315,7 +330,7 @@ def _create_shopping_mall(width: float, depth: float, floors: int, location: Lis
             actors.append(main_result.get("result"))
         
         # Entrance canopy
-        canopy_result = unreal.send_command("spawn_actor", {
+        canopy_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Canopy",
             "type": "StaticMeshActor",
             "location": [location[0], location[1] - depth/2 - 150, location[2] + floor_height],
@@ -327,7 +342,7 @@ def _create_shopping_mall(width: float, depth: float, floors: int, location: Lis
         
         # Entrance pillars
         for i, x_offset in enumerate([-width/3, 0, width/3]):
-            pillar_result = unreal.send_command("spawn_actor", {
+            pillar_result = _safe_spawn_building_actor(unreal, {
                 "name": f"{name_prefix}_Pillar_{i}",
                 "type": "StaticMeshActor",
                 "location": [location[0] + x_offset, location[1] - depth/2 - 100, location[2] + floor_height/2],
@@ -338,7 +353,7 @@ def _create_shopping_mall(width: float, depth: float, floors: int, location: Lis
                 actors.append(pillar_result.get("result"))
         
         # Rooftop parking deck indicator
-        parking_result = unreal.send_command("spawn_actor", {
+        parking_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_RoofParking",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + mall_height + 15],
@@ -370,7 +385,7 @@ def _create_parking_garage(levels: int, width: float, depth: float, location: Li
         level_height = 120.0  # Low ceiling height for parking
         
         # Foundation
-        foundation_result = unreal.send_command("spawn_actor", {
+        foundation_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Foundation",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] - 15],
@@ -385,7 +400,7 @@ def _create_parking_garage(levels: int, width: float, depth: float, location: Li
             level_z = location[2] + level * level_height
             
             # Floor slab
-            floor_result = unreal.send_command("spawn_actor", {
+            floor_result = _safe_spawn_building_actor(unreal, {
                 "name": f"{name_prefix}_Floor_{level}",
                 "type": "StaticMeshActor",
                 "location": [location[0], location[1], level_z],
@@ -398,7 +413,7 @@ def _create_parking_garage(levels: int, width: float, depth: float, location: Li
             # Support pillars
             for x in [-width/3, 0, width/3]:
                 for y in [-depth/3, 0, depth/3]:
-                    pillar_result = unreal.send_command("spawn_actor", {
+                    pillar_result = _safe_spawn_building_actor(unreal, {
                         "name": f"{name_prefix}_Pillar_{level}_{x}_{y}",
                         "type": "StaticMeshActor",
                         "location": [location[0] + x, location[1] + y, level_z + level_height/2],
@@ -424,7 +439,7 @@ def _create_parking_garage(levels: int, width: float, depth: float, location: Li
                         barrier_loc = [location[0], location[1] + depth/2, level_z + 40]
                         barrier_scale = [width/100.0, 0.1, 0.8]
                     
-                    barrier_result = unreal.send_command("spawn_actor", {
+                    barrier_result = _safe_spawn_building_actor(unreal, {
                         "name": f"{name_prefix}_Barrier_{level}_{side}",
                         "type": "StaticMeshActor",
                         "location": barrier_loc,
@@ -435,7 +450,7 @@ def _create_parking_garage(levels: int, width: float, depth: float, location: Li
                         actors.append(barrier_result.get("result"))
         
         # Ramp structure (simplified)
-        ramp_result = unreal.send_command("spawn_actor", {
+        ramp_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Ramp",
             "type": "StaticMeshActor",
             "location": [location[0] + width/2 + 100, location[1], location[2] + (levels * level_height)/2],
@@ -467,7 +482,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
         floor_height = 130.0
         
         # Grand foundation
-        foundation_result = unreal.send_command("spawn_actor", {
+        foundation_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Foundation",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] - 20],
@@ -479,7 +494,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
         
         # Lobby (extra tall)
         lobby_height = floor_height * 2
-        lobby_result = unreal.send_command("spawn_actor", {
+        lobby_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Lobby",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + lobby_height/2],
@@ -491,7 +506,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
         
         # Main tower
         tower_height = (floors - 2) * floor_height
-        tower_result = unreal.send_command("spawn_actor", {
+        tower_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Tower",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + lobby_height + tower_height/2],
@@ -503,7 +518,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
         
         # Penthouse (top floor wider)
         penthouse_height = location[2] + lobby_height + tower_height
-        penthouse_result = unreal.send_command("spawn_actor", {
+        penthouse_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Penthouse",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], penthouse_height + floor_height/2],
@@ -514,7 +529,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
             actors.append(penthouse_result.get("result"))
         
         # Rooftop pool area
-        pool_result = unreal.send_command("spawn_actor", {
+        pool_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Pool",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], penthouse_height + floor_height + 20],
@@ -525,7 +540,7 @@ def _create_hotel(floors: int, width: float, depth: float, location: List[float]
             actors.append(pool_result.get("result"))
         
         # Entrance canopy
-        canopy_result = unreal.send_command("spawn_actor", {
+        canopy_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Canopy",
             "type": "StaticMeshActor",
             "location": [location[0], location[1] - depth/2 - 100, location[2] + 150],
@@ -557,7 +572,7 @@ def _create_restaurant(width: float, depth: float, location: List[float], name_p
         height = 150.0
         
         # Foundation
-        foundation_result = unreal.send_command("spawn_actor", {
+        foundation_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Foundation",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] - 10],
@@ -568,7 +583,7 @@ def _create_restaurant(width: float, depth: float, location: List[float], name_p
             actors.append(foundation_result.get("result"))
         
         # Main building
-        main_result = unreal.send_command("spawn_actor", {
+        main_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Main",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + height/2],
@@ -579,7 +594,7 @@ def _create_restaurant(width: float, depth: float, location: List[float], name_p
             actors.append(main_result.get("result"))
         
         # Outdoor seating area (patio)
-        patio_result = unreal.send_command("spawn_actor", {
+        patio_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Patio",
             "type": "StaticMeshActor",
             "location": [location[0], location[1] - depth/2 - 75, location[2]],
@@ -590,7 +605,7 @@ def _create_restaurant(width: float, depth: float, location: List[float], name_p
             actors.append(patio_result.get("result"))
         
         # Awning
-        awning_result = unreal.send_command("spawn_actor", {
+        awning_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Awning",
             "type": "StaticMeshActor",
             "location": [location[0], location[1] - depth/2 - 50, location[2] + height - 20],
@@ -622,7 +637,7 @@ def _create_store(width: float, depth: float, location: List[float], name_prefix
         height = 140.0
         
         # Foundation
-        foundation_result = unreal.send_command("spawn_actor", {
+        foundation_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Foundation",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] - 10],
@@ -633,7 +648,7 @@ def _create_store(width: float, depth: float, location: List[float], name_prefix
             actors.append(foundation_result.get("result"))
         
         # Main building
-        main_result = unreal.send_command("spawn_actor", {
+        main_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Main",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + height/2],
@@ -644,7 +659,7 @@ def _create_store(width: float, depth: float, location: List[float], name_prefix
             actors.append(main_result.get("result"))
         
         # Storefront sign
-        sign_result = unreal.send_command("spawn_actor", {
+        sign_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Sign",
             "type": "StaticMeshActor",
             "location": [location[0], location[1] - depth/2 - 10, location[2] + height + 20],
@@ -676,7 +691,7 @@ def _create_apartment_building(floors: int, width: float, depth: float, location
         floor_height = 110.0
         
         # Foundation
-        foundation_result = unreal.send_command("spawn_actor", {
+        foundation_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Foundation",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] - 15],
@@ -688,7 +703,7 @@ def _create_apartment_building(floors: int, width: float, depth: float, location
         
         # Main building
         building_height = floors * floor_height
-        building_result = unreal.send_command("spawn_actor", {
+        building_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Building",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + building_height/2],
@@ -699,7 +714,7 @@ def _create_apartment_building(floors: int, width: float, depth: float, location
             actors.append(building_result.get("result"))
         
         # Entry steps
-        steps_result = unreal.send_command("spawn_actor", {
+        steps_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Steps",
             "type": "StaticMeshActor",
             "location": [location[0], location[1] - depth/2 - 30, location[2] + 10],
@@ -710,7 +725,7 @@ def _create_apartment_building(floors: int, width: float, depth: float, location
             actors.append(steps_result.get("result"))
         
         # Simple roof
-        roof_result = unreal.send_command("spawn_actor", {
+        roof_result = _safe_spawn_building_actor(unreal, {
             "name": f"{name_prefix}_Roof",
             "type": "StaticMeshActor",
             "location": [location[0], location[1], location[2] + building_height + 15],
