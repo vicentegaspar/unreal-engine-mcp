@@ -1115,7 +1115,7 @@ def create_obstacle_course(
                 "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
             }
             resp = safe_spawn_actor(unreal, params)
-            if resp and resp.get("success"):
+            if resp and resp.get("status") == "success":
                 spawned.append(resp)
         return {"success": True, "actors": spawned}
     except Exception as e:
@@ -1357,7 +1357,7 @@ def create_town(
                     building_count
                 )
                 
-                if building_result.get("success"):
+                if building_result.get("status") == "success":
                     all_spawned.extend(building_result.get("actors", []))
                     building_count += 1
         
