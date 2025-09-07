@@ -1097,35 +1097,6 @@ def create_maze(
         return {"success": False, "message": str(e)}
 
 @mcp.tool()
-def create_obstacle_course(
-    checkpoints: int = 5,
-    spacing: float = 500.0,
-    location: List[float] = [0.0, 0.0, 0.0]
-) -> Dict[str, Any]:
-    """Create a simple obstacle course of pillars."""
-    try:
-        unreal = get_unreal_connection()
-        if not unreal:
-            return {"success": False, "message": "Failed to connect to Unreal Engine"}
-        spawned = []
-        for i in range(checkpoints):
-            actor_name = f"Obstacle_{i}"
-            loc = [location[0] + i * spacing, location[1], location[2]]
-            params = {
-                "name": actor_name,
-                "type": "StaticMeshActor",
-                "location": loc,
-                "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
-            }
-            resp = safe_spawn_actor(unreal, params)
-            if resp and resp.get("status") == "success":
-                spawned.append(resp)
-        return {"success": True, "actors": spawned}
-    except Exception as e:
-        logger.error(f"create_obstacle_course error: {e}")
-        return {"success": False, "message": str(e)}
-
-@mcp.tool()
 def get_available_materials(
     search_path: str = "/Game/",
     include_engine_materials: bool = True
