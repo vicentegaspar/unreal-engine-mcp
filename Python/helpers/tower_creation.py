@@ -230,7 +230,7 @@ def create_twisted_tower_level(unreal, level: int, height: int, base_size: int, 
         actor_name = f"{name_prefix}_twisted_{level}_{i}"
         result = spawn_colored_tower_piece(unreal, actor_name, mesh, [x, y, level_height], color, block_size)
         
-        if result.get("success"):
+        if result.get("status") == "success":
             spawned.append(result)
     
     return spawned
@@ -269,7 +269,7 @@ def create_multi_tiered_level(unreal, level: int, height: int, base_size: int, b
             actor_name = f"{name_prefix}_tiered_{level}_{tier}_{i}"
             result = spawn_colored_tower_piece(unreal, actor_name, mesh, [x, y, z], color, block_size)
             
-            if result.get("success"):
+            if result.get("status") == "success":
                 spawned.append(result)
     
     return spawned
@@ -318,7 +318,7 @@ def get_or_create_colored_blueprint(unreal, mesh: str, color: List[float], base_
     create_result = unreal.send_command("create_blueprint", {"name": bp_name, "parent_class": "Actor"})
     
     blueprint_exists = False
-    if create_result and create_result.get("success"):
+    if create_result and create_result.get("status") == "success":
         # Blueprint was created successfully
         logger.info(f"Created new blueprint {bp_name}")
     elif create_result and "already exists" in create_result.get("error", "").lower():
@@ -344,7 +344,7 @@ def get_or_create_colored_blueprint(unreal, mesh: str, color: List[float], base_
             "component_type": "StaticMeshComponent", 
             "component_name": "Mesh"
         })
-        if not add_result or not add_result.get("success"):
+        if not add_result or not add_result.get("status") == "success":
             logger.warning(f"Failed to add component to {bp_name}")
             return None
         
@@ -354,7 +354,7 @@ def get_or_create_colored_blueprint(unreal, mesh: str, color: List[float], base_
             "component_name": "Mesh",
             "static_mesh": mesh
         })
-        if not mesh_result or not mesh_result.get("success"):
+        if not mesh_result or not mesh_result.get("status") == "success":
             logger.warning(f"Failed to set mesh properties for {bp_name}")
         
         # Set physics properties
@@ -365,7 +365,7 @@ def get_or_create_colored_blueprint(unreal, mesh: str, color: List[float], base_
             "gravity_enabled": True,
             "mass": 1.0
         })
-        if not physics_result or not physics_result.get("success"):
+        if not physics_result or not physics_result.get("status") == "success":
             logger.warning(f"Failed to set physics properties for {bp_name}")
         
         # Apply color
@@ -375,12 +375,12 @@ def get_or_create_colored_blueprint(unreal, mesh: str, color: List[float], base_
             "color": color,
             "material_slot": 0
         })
-        if not color_result or not color_result.get("success"):
+        if not color_result or not color_result.get("status") == "success":
             logger.warning(f"Failed to set color for {bp_name}")
         
         # Compile blueprint
         compile_result = unreal.send_command("compile_blueprint", {"blueprint_name": bp_name})
-        if not compile_result or not compile_result.get("success"):
+        if not compile_result or not compile_result.get("status") == "success":
             logger.warning(f"Failed to compile blueprint {bp_name}")
         
         # Cache the blueprint for reuse
@@ -443,7 +443,7 @@ def create_tower_blueprints_and_batch_spawn(
             create_result = unreal.send_command("create_blueprint", {"name": bp_name, "parent_class": "Actor"})
             
             blueprint_exists = False
-            if create_result and create_result.get("success"):
+            if create_result and create_result.get("status") == "success":
                 logger.info(f"Created new blueprint {bp_name} for color {color}")
                 
                 # Set up the blueprint
@@ -492,7 +492,7 @@ def create_tower_blueprints_and_batch_spawn(
             pieces_spawned = 0
             for piece in pieces:
                 spawn_result = spawn_blueprint_actor(unreal, bp_name, piece["name"], piece["location"])
-                if spawn_result.get("success"):
+                if spawn_result.get("status") == "success":
                     # Set correct scale
                     spawned_name = spawn_result.get("result", {}).get("name", piece["name"])
                     unreal.send_command("set_actor_transform", {
@@ -537,7 +537,7 @@ def spawn_colored_tower_piece(unreal, actor_name: str, mesh: str, location: List
     
     result = create_tower_blueprints_and_batch_spawn(unreal, tower_pieces, mesh, "TowerPiece")
     
-    if result.get("success") and result.get("actors"):
+    if result.get("status") == "success" and result.get("actors"):
         return result["actors"][0]  # Return the single spawned actor
     else:
         return {"success": False, "message": result.get("message", "Failed to spawn piece")}
@@ -567,7 +567,7 @@ def create_decorative_tower_elements(unreal, location: List[float], base_size: i
             result = spawn_colored_tower_piece(unreal, actor_name, "/Engine/BasicShapes/Cone.Cone", 
                                              spire_location, color, scale_factor * 100)
             
-            if result.get("success"):
+            if result.get("status") == "success":
                 spawned.append(result)
         
         # Add corner banners/flags every few levels
@@ -586,7 +586,7 @@ def create_decorative_tower_elements(unreal, location: List[float], base_size: i
                 result = spawn_colored_tower_piece(unreal, actor_name, "/Engine/BasicShapes/Cylinder.Cylinder",
                                                  [flag_x, flag_y, level_height + 150], flag_color, 20)
                 
-                if result.get("success"):
+                if result.get("status") == "success":
                     spawned.append(result)
     
     except Exception as e:

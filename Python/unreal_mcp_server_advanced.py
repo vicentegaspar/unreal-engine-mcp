@@ -489,7 +489,7 @@ def create_pyramid(
                         "static_mesh": mesh
                     }
                     resp = safe_spawn_actor(unreal, params)
-                    if resp and resp.get("success"):
+                    if resp and resp.get("status") == "success":
                         spawned.append(resp)
         return {"success": True, "actors": spawned}
     except Exception as e:
@@ -528,7 +528,7 @@ def create_wall(
                     "static_mesh": mesh
                 }
                 resp = safe_spawn_actor(unreal, params)
-                if resp and resp.get("success"):
+                if resp and resp.get("status") == "success":
                     spawned.append(resp)
         return {"success": True, "actors": spawned}
     except Exception as e:
@@ -576,7 +576,7 @@ def create_tower(
                         "static_mesh": mesh
                     }
                     resp = safe_spawn_actor(unreal, params)
-                    if resp and resp.get("success"):
+                    if resp and resp.get("status") == "success":
                         spawned.append(resp)
                         
             elif tower_style == "tapered":
@@ -667,7 +667,7 @@ def create_tower(
                         "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
                     }
                     resp = safe_spawn_actor(unreal, params)
-                    if resp and resp.get("success"):
+                    if resp and resp.get("status") == "success":
                         spawned.append(resp)
                         
         return {"success": True, "actors": spawned, "tower_style": tower_style}
@@ -702,7 +702,7 @@ def create_staircase(
                 "static_mesh": mesh
             }
             resp = safe_spawn_actor(unreal, params)
-            if resp and resp.get("success"):
+            if resp and resp.get("status") == "success":
                 spawned.append(resp)
         return {"success": True, "actors": spawned}
     except Exception as e:
@@ -817,7 +817,7 @@ def create_arch(
                 "static_mesh": mesh
             }
             resp = safe_spawn_actor(unreal, params)
-            if resp and resp.get("success"):
+            if resp and resp.get("status") == "success":
                 spawned.append(resp)
         return {"success": True, "actors": spawned}
     except Exception as e:
@@ -1056,7 +1056,7 @@ def create_maze(
                             "static_mesh": "/Engine/BasicShapes/Cube.Cube"
                         }
                         resp = safe_spawn_actor(unreal, params)
-                        if resp and resp.get("success"):
+                        if resp and resp.get("status") == "success":
                             spawned.append(resp)
         
         # Add entrance and exit markers
@@ -1069,7 +1069,7 @@ def create_maze(
             "scale": [0.5, 0.5, 0.5],
             "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
         })
-        if entrance_marker and entrance_marker.get("success"):
+        if entrance_marker and entrance_marker.get("status") == "success":
             spawned.append(entrance_marker)
             
         exit_marker = safe_spawn_actor(unreal, {
@@ -1081,7 +1081,7 @@ def create_maze(
             "scale": [0.5, 0.5, 0.5],
             "static_mesh": "/Engine/BasicShapes/Sphere.Sphere"
         })
-        if exit_marker and exit_marker.get("success"):
+        if exit_marker and exit_marker.get("status") == "success":
             spawned.append(exit_marker)
         
         return {
@@ -1094,6 +1094,35 @@ def create_maze(
         }
     except Exception as e:
         logger.error(f"create_maze error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
+def create_obstacle_course(
+    checkpoints: int = 5,
+    spacing: float = 500.0,
+    location: List[float] = [0.0, 0.0, 0.0]
+) -> Dict[str, Any]:
+    """Create a simple obstacle course of pillars."""
+    try:
+        unreal = get_unreal_connection()
+        if not unreal:
+            return {"success": False, "message": "Failed to connect to Unreal Engine"}
+        spawned = []
+        for i in range(checkpoints):
+            actor_name = f"Obstacle_{i}"
+            loc = [location[0] + i * spacing, location[1], location[2]]
+            params = {
+                "name": actor_name,
+                "type": "StaticMeshActor",
+                "location": loc,
+                "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
+            }
+            resp = safe_spawn_actor(unreal, params)
+            if resp and resp.get("status") == "success":
+                spawned.append(resp)
+        return {"success": True, "actors": spawned}
+    except Exception as e:
+        logger.error(f"create_obstacle_course error: {e}")
         return {"success": False, "message": str(e)}
 
 @mcp.tool()
@@ -1227,7 +1256,7 @@ def set_mesh_material_color(
         response_color = unreal.send_command("set_mesh_material_color", params_color)
         
         # Return success if either parameter setting worked
-        if (response_base and response_base.get("success")) or (response_color and response_color.get("success")):
+        if (response_base and response_base.get("status") == "success") or (response_color and response_color.get("status") == "success"):
             return {
                 "success": True, 
                 "message": f"Color applied successfully to slot {material_slot}: {color}",
@@ -1330,7 +1359,7 @@ def create_town(
                     building_count
                 )
                 
-                if building_result.get("success"):
+                if building_result.get("status") == "success":
                     all_spawned.extend(building_result.get("actors", []))
                     building_count += 1
         

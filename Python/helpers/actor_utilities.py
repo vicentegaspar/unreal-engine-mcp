@@ -63,7 +63,7 @@ def spawn_blueprint_actor(
         response = unreal_connection.send_command("spawn_blueprint_actor", params)
         
         # Mark actor as created if successful
-        if response and response.get("success"):
+        if response and response.get("status") == "success":
             manager = get_global_actor_name_manager()
             if manager:
                 manager.mark_actor_created(actor_name)
