@@ -829,160 +829,58 @@ def spawn_physics_blueprint_actor (
     mass: float = 1.0,
     simulate_physics: bool = True,
     gravity_enabled: bool = True,
-    colors: List[List[float]] = None,  # Optional colors for multiple material slots [[R,G,B,A], [R,G,B,A], ...]
-    color: List[float] = None,  # Legacy single color parameter for backward compatibility
-    scale: List[float] = [1.0, 1.0, 1.0],  # Default scale
-    auto_apply_materials: bool = True  # Whether to automatically get and apply available materials
+    color: List[float] = None,  # Optional color parameter [R, G, B] or [R, G, B, A]
+    scale: List[float] = [1.0, 1.0, 1.0]  # Default scale
 ) -> Dict[str, Any]:
     """
-    Quickly spawn a single actor with physics, colors for all material slots, and a specific mesh.
+    Quickly spawn a single actor with physics, color, and a specific mesh.
 
     This is the primary function for creating simple objects with physics properties.
-    It handles creating a temporary Blueprint, setting up the mesh, colors for all material slots, 
-    and physics, then spawns the actor in the world. It can automatically detect the number of 
-    material slots and apply colors to all of them.
+    It handles creating a temporary Blueprint, setting up the mesh, color, and physics,
+    and then spawns the actor in the world. It's ideal for quickly adding
+    dynamic objects to the scene without needing to manually create Blueprints.
     
     Args:
-        colors: Optional list of colors for multiple material slots [[R,G,B,A], [R,G,B,A], ...]. 
-                Each color should be [R,G,B] or [R,G,B,A] where values are 0.0-1.0.
-                If fewer colors than material slots are provided, colors will be cycled.
-        color: Legacy single color parameter for backward compatibility [R,G,B] or [R,G,B,A].
-        auto_apply_materials: If True, automatically gets available materials and applies them intelligently.
+        color: Optional color as [R, G, B] or [R, G, B, A] where values are 0.0-1.0.
+               If [R, G, B] is provided, alpha will be set to 1.0 automatically.
     """
     try:
-        # Get Unreal connection early since we'll need it for helper functions
-        unreal = get_unreal_connection()
-        if not unreal:
-            return {"success": False, "message": "Failed to connect to Unreal Engine"}
-        
         bp_name = f"{name}_BP"
         create_blueprint(bp_name, "Actor")
         add_component_to_blueprint(bp_name, "StaticMeshComponent", "Mesh", scale=scale)
         set_static_mesh_properties(bp_name, "Mesh", mesh_path)
         set_physics_properties(bp_name, "Mesh", simulate_physics, gravity_enabled, mass)
-        
-        # Compile blueprint first to ensure the mesh is properly set
+
+        # Set color if provided
+        if color is not None:
+            # Convert 3-value color [R,G,B] to 4-value [R,G,B,A] if needed
+            if len(color) == 3:
+                color = color + [1.0]  # Add alpha=1.0
+            elif len(color) != 4:
+                logger.warning(f"Invalid color format: {color}. Expected [R,G,B] or [R,G,B,A]. Skipping color.")
+                color = None
+
+            if color is not None:
+                color_result = set_mesh_material_color(bp_name, "Mesh", color)
+                if not color_result.get("success", False):
+                    logger.warning(f"Failed to set color {color} for {bp_name}: {color_result.get('message', 'Unknown error')}")
+
         compile_blueprint(bp_name)
-        
-        # Get available materials if auto_apply_materials is enabled
-        available_materials = []
-        if auto_apply_materials:
-            materials_result = get_available_materials()
-            if materials_result.get("success", False):
-                available_materials = materials_result.get("materials", [])
-                logger.info(f"Found {len(available_materials)} available materials")
-        
-        # Get material slot information for the blueprint component
-        material_info = get_blueprint_material_info(unreal, bp_name, "Mesh")
-        material_slots = []
-        if material_info.get("success", False):
-            material_slots = material_info.get("material_slots", [])
-            logger.info(f"Blueprint {bp_name} has {len(material_slots)} material slots")
-        
-        # Handle color application
-        colors_to_apply = []
-        
-        # Convert legacy single color to colors list for backward compatibility
-        if color is not None and colors is None:
-            colors = [color]
-        
-        if colors is not None:
-            # Process and validate colors
-            for i, color_item in enumerate(colors):
-                if isinstance(color_item, list):
-                    if len(color_item) == 3:
-                        colors_to_apply.append(color_item + [1.0])  # Add alpha=1.0
-                    elif len(color_item) == 4:
-                        colors_to_apply.append(color_item)
-                    else:
-                        logger.warning(f"Invalid color format at index {i}: {color_item}. Expected [R,G,B] or [R,G,B,A]. Skipping.")
-                        continue
-                else:
-                    logger.warning(f"Invalid color type at index {i}: {type(color_item)}. Expected list. Skipping.")
-                    continue
-        
-        # Apply colors/materials to all material slots
-        applied_materials = []
-        if material_slots:
-            for slot_index, slot_info in enumerate(material_slots):
-                slot_num = slot_info.get("slot", slot_index)
-                
-                # Determine what to apply to this slot
-                if colors_to_apply:
-                    # Use provided colors (cycle through them if there are more slots than colors)
-                    color_to_apply = colors_to_apply[slot_index % len(colors_to_apply)]
-                    
-                    # Apply color using dynamic material to specific slot
-                    color_result = set_mesh_material_color(bp_name, "Mesh", color_to_apply, material_slot=slot_num)
-                    if color_result.get("success", False):
-                        applied_materials.append({
-                            "slot": slot_num,
-                            "type": "color",
-                            "color": color_to_apply,
-                            "success": True
-                        })
-                        logger.info(f"Applied color {color_to_apply} to material slot {slot_num}")
-                    else:
-                        logger.warning(f"Failed to apply color {color_to_apply} to slot {slot_num}: {color_result.get('message', 'Unknown error')}")
-                        applied_materials.append({
-                            "slot": slot_num,
-                            "type": "color",
-                            "color": color_to_apply,
-                            "success": False,
-                            "error": color_result.get("message", "Unknown error")
-                        })
-                
-                elif auto_apply_materials and available_materials:
-                    # Auto-apply available materials intelligently
-                    if slot_index < len(available_materials):
-                        material = available_materials[slot_index]
-                        material_path = material.get("path", "")
-                        
-                        if material_path:
-                            # Apply the material to this specific slot
-                            material_result = apply_material_to_blueprint(bp_name, "Mesh", material_path, slot_num)
-                            if material_result.get("success", False):
-                                applied_materials.append({
-                                    "slot": slot_num,
-                                    "type": "material",
-                                    "material_path": material_path,
-                                    "material_name": material.get("name", ""),
-                                    "success": True
-                                })
-                                logger.info(f"Applied material {material.get('name', material_path)} to slot {slot_num}")
-                            else:
-                                logger.warning(f"Failed to apply material {material_path} to slot {slot_num}")
-                                applied_materials.append({
-                                    "slot": slot_num,
-                                    "type": "material",
-                                    "material_path": material_path,
-                                    "success": False,
-                                    "error": material_result.get("message", "Unknown error")
-                                })
-        
-        # Final compilation after material changes
-        compile_blueprint(bp_name)
+        result = spawn_blueprint_actor(bp_name, name, location)
         
         # Spawn the blueprint actor using helper function
+        unreal = get_unreal_connection()
         result = spawn_blueprint_actor(unreal, bp_name, name, location)
-        
+
         # Ensure proper scale is set on the spawned actor
         if result.get("success", False):
             spawned_name = result.get("result", {}).get("name", name)
             set_actor_transform(spawned_name, scale=scale)
-        
-        # Add material application info to the result
-        if result.get("success", False):
-            result["material_slots_applied"] = applied_materials
-            result["total_material_slots"] = len(material_slots)
-            result["colors_provided"] = len(colors_to_apply) if colors_to_apply else 0
-            result["materials_available"] = len(available_materials) if auto_apply_materials else 0
-        
+
         return result
     except Exception as e:
-        logger.error(f"spawn_physics_blueprint_actor error: {e}")
+        logger.error(f"spawn_physics_blueprint_actor  error: {e}")
         return {"success": False, "message": str(e)}
-
 
 @mcp.tool()
 def create_maze(
