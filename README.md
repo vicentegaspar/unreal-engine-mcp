@@ -6,7 +6,7 @@
 [![Twitter](https://img.shields.io/badge/X-@Flopperam-1DA1F2.svg?logo=x&logoColor=white)](https://twitter.com/Flopperam)
 [![TikTok](https://img.shields.io/badge/TikTok-@flopperam-000000.svg?logo=tiktok&logoColor=white)](https://tiktok.com/@flopperam)
 
-**Control Unreal Engine 5.5+ through AI with natural language. Build incredible 3D worlds and architectural masterpieces using MCP. Create entire towns, medieval castles, modern mansions, challenging mazes, and complex structures with AI-powered commands.**
+**Control Unreal Engine 5.5+ through AI with natural language. Build incredible 3D worlds and architectural masterpieces using MCP. Create entire towns, medieval castles, modern mansions, challenging mazes, and complex structures with AI-powered commands. Now featuring 12 rich architectural styles including Ruins, Corrupted, Elven, Steampunk, and more!**
 
 > **Active Development**: This project is under very active development with consistent updates, new features, and improvements being added regularly. Join our [Discord](https://discord.gg/3KNkke3rnH) to stay updated on the latest releases!
 
@@ -27,11 +27,16 @@ Check out these examples of the MCP server in action on our channel:
 → create_town(town_size="massive", architectural_style="futuristic", building_density=0.95, include_advanced_features=true)
 ```
 
-### Advanced Structures  
+### Advanced Structures with Architectural Styles
 ```bash
-# Build complex multi-room houses with windows, doors, and roofs
-> "Create a Victorian mansion complex with east and west wing houses."
-→ construct_house(house_style="mansion", width=1500, height=900)
+# Build complex multi-room houses with thematic architectural styles
+> "Create a ruined elven settlement with overgrown vegetation"
+→ create_town(town_size="small", thematic_style="ruins", architectural_style="mixed")
+→ construct_house(house_style="cottage", architectural_style="elven")
+
+# Build a corrupted dark fortress
+> "Build a twisted, spiky fortress with malformed geometry"
+→ create_castle_fortress(castle_size="large", thematic_style="corrupted")
 ```
 
 ### Intelligent Mazes
@@ -48,6 +53,7 @@ Check out these examples of the MCP server in action on our channel:
 | **Category** | **Tools** | **Description** |
 |--------------|-----------|-----------------|
 | **World Building** | `create_town`, `construct_house`, `create_tower`, `create_arch` | Build complex architectural structures and entire settlements |
+| **🎨 Architectural Styles** | `list_architectural_styles`, `get_architectural_style_info`, `enhance_building_prompt` | Apply rich thematic styles like Ruins, Elven, Corrupted, Steampunk to any structure |
 | **Level Design** | `create_maze`, `create_obstacle_course`, `create_pyramid`, `create_wall` | Design challenging game levels and puzzles |
 | **Physics & Materials** | `spawn_physics_blueprint_actor `, `set_physics_properties` | Create realistic physics simulations |
 | **Blueprint System** | `create_blueprint`, `compile_blueprint`, `add_component_to_blueprint` | Visual scripting and custom actor creation |
@@ -150,7 +156,43 @@ For improved results, especially when creating specific types of objects, provid
 > "Create a medieval castle with towers and walls"
 > "Generate a town square with fountain and buildings"
 > "Make a challenging maze for players to solve"
+> "Build a ruined elven settlement with corrupted spiky towers"
 ```
+
+## 🎨 New: Architectural Styles System
+
+Transform your builds with **12 rich architectural styles** that add thematic depth and visual storytelling to any structure:
+
+### Core Styles
+- **🏺 Ruins**: Ancient weathered structures with moss, vegetation, and crumbled walls
+- **💥 Destroyed**: Partially damaged buildings with debris and collapsed sections
+- **👹 Corrupted**: Spiky, malformed architecture with twisted geometry
+- **✨ Detailed**: Intricate patterns, mosaics, and fractal decorations
+- **🧝 Elven**: Graceful organic architecture with curved roofs and living wood
+- **⚔️ Orcish**: Brutal designs with metal spikes and intimidating features
+- **🏘️ Human**: Traditional medieval architecture with practical design
+
+### Extended Styles
+- **💎 Crystalline**: Crystal-carved structures with prismatic light effects
+- **⚙️ Steampunk**: Victorian-industrial with brass pipes and clockwork
+- **🦾 Biomechanical**: Organic-mechanical hybrid architecture
+- **👼 Celestial**: Divine floating architecture with starlight patterns
+- **🌋 Volcanic**: Obsidian walls with molten rock features
+
+### Style Usage
+```bash
+# Apply styles to any building function
+construct_house(architectural_style="elven")
+create_town(thematic_style="ruins")
+create_castle_fortress(thematic_style="corrupted")
+
+# Get style information
+list_architectural_styles()
+get_architectural_style_info("steampunk")
+enhance_building_prompt("Build a tower", "crystalline")
+```
+
+See the complete [**Architectural Styles Guide**](Guides/architectural-styles-guide.md) for detailed usage examples.
 
 ---
 

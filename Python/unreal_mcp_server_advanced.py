@@ -36,6 +36,11 @@ from helpers.actor_utilities import spawn_blueprint_actor, get_blueprint_materia
 from helpers.actor_name_manager import (
     safe_spawn_actor, safe_delete_actor
 )
+from helpers.architectural_styles import (
+    get_style_description, get_style_materials, get_style_features, 
+    get_style_colors, list_available_styles, get_style_info,
+    enhance_prompt_with_style, get_style_summary, ARCHITECTURAL_STYLES
+)
 
 # Configure logging with more detailed format
 logging.basicConfig(
@@ -714,16 +719,26 @@ def construct_house(
     location: List[float] = [0.0, 0.0, 0.0],
     name_prefix: str = "House",
     mesh: str = "/Engine/BasicShapes/Cube.Cube",
-    house_style: str = "modern"  # "modern", "cottage"
+    house_style: str = "modern",  # "modern", "cottage"
+    architectural_style: str = "none"  # Architectural style from the style system
 ) -> Dict[str, Any]:
-    """Construct a realistic house with architectural details and multiple rooms."""
+    """Construct a realistic house with architectural details and multiple rooms, enhanced with architectural styles."""
     try:
         unreal = get_unreal_connection()
         if not unreal:
             return {"success": False, "message": "Failed to connect to Unreal Engine"}
 
         # Use the helper function to build the house
-        return build_house(unreal, width, depth, height, location, name_prefix, mesh, house_style)
+        result = build_house(unreal, width, depth, height, location, name_prefix, mesh, house_style)
+        
+        # Add architectural style information to the result
+        if architectural_style != "none":
+            style_info = get_style_info(architectural_style)
+            result["architectural_style"] = style_info
+            result["style_description"] = get_style_description(architectural_style)
+            logger.info(f"House built with {architectural_style} style: {style_info['name']}")
+        
+        return result
 
     except Exception as e:
         logger.error(f"construct_house error: {e}")
@@ -1178,9 +1193,10 @@ def create_town(
     location: List[float] = [0.0, 0.0, 0.0],
     name_prefix: str = "Town",
     include_infrastructure: bool = True,
-    architectural_style: str = "mixed"  # "modern", "cottage", "mansion", "mixed", "downtown", "futuristic"
+    architectural_style: str = "mixed",  # "modern", "cottage", "mansion", "mixed", "downtown", "futuristic" - legacy styles
+    thematic_style: str = "none"  # New architectural style from the style system
 ) -> Dict[str, Any]:
-    """Create a full dynamic town with buildings, streets, infrastructure, and vehicles."""
+    """Create a full dynamic town with buildings, streets, infrastructure, and vehicles, enhanced with thematic architectural styles."""
     try:
         import random
         random.seed()  # Use different seed each time for variety
@@ -1252,7 +1268,8 @@ def create_town(
                     building_area,
                     max_height,
                     f"{name_prefix}_Building_{block_x}_{block_y}",
-                    building_count
+                    building_count,
+                    thematic_style
                 )
                 
                 if building_result.get("status") == "success":
@@ -1314,7 +1331,7 @@ def create_town(
                 all_spawned.extend(plaza_results.get("actors", []))
                 infrastructure_count += len(plaza_results.get("actors", []))
         
-        return {
+        result = {
             "success": True,
             "town_stats": {
                 "size": town_size,
@@ -1323,11 +1340,22 @@ def create_town(
                 "buildings": building_count,
                 "infrastructure_items": infrastructure_count,
                 "total_actors": len(all_spawned),
-                "architectural_style": architectural_style
+                "architectural_style": architectural_style,
+                "thematic_style": thematic_style
             },
             "actors": all_spawned,
             "message": f"Created {town_size} town with {building_count} buildings and {infrastructure_count} infrastructure items"
         }
+        
+        # Add thematic style information
+        if thematic_style != "none":
+            style_info = get_style_info(thematic_style)
+            result["thematic_style_info"] = style_info
+            result["style_description"] = get_style_description(thematic_style)
+            result["message"] += f" with {style_info['name']} thematic styling"
+            logger.info(f"Town created with {thematic_style} thematic style: {style_info['name']}")
+        
+        return result
         
     except Exception as e:
         logger.error(f"create_town error: {e}")
@@ -1341,12 +1369,13 @@ def create_castle_fortress(
     name_prefix: str = "Castle",
     include_siege_weapons: bool = True,
     include_village: bool = True,
-    architectural_style: str = "medieval"  # "medieval", "fantasy", "gothic"
+    architectural_style: str = "medieval",  # "medieval", "fantasy", "gothic" - legacy styles
+    thematic_style: str = "none"  # New architectural style from the style system
 ) -> Dict[str, Any]:
     """
     Create a massive castle fortress with walls, towers, courtyards, throne room,
     and surrounding village. Perfect for dramatic TikTok reveals showing
-    the scale and detail of a complete medieval fortress.
+    the scale and detail of a complete medieval fortress, enhanced with thematic styles.
     """
     try:
         unreal = get_unreal_connection()
@@ -1384,14 +1413,14 @@ def create_castle_fortress(
         
         logger.info(f"Castle fortress creation complete! Created {len(all_actors)} actors")
 
-        
-        return {
+        result = {
             "success": True,
             "message": f"Epic {castle_size} {architectural_style} castle fortress created with {len(all_actors)} elements!",
             "actors": all_actors,
             "stats": {
                 "size": castle_size,
                 "style": architectural_style,
+                "thematic_style": thematic_style,
                 "wall_sections": int(dimensions["outer_width"]/200) * 2 + int(dimensions["outer_depth"]/200) * 2,
                 "towers": dimensions["tower_count"],
                 "has_village": include_village,
@@ -1400,8 +1429,76 @@ def create_castle_fortress(
             }
         }
         
+        # Add thematic style information
+        if thematic_style != "none":
+            style_info = get_style_info(thematic_style)
+            result["thematic_style_info"] = style_info
+            result["style_description"] = get_style_description(thematic_style)
+            result["message"] += f" with {style_info['name']} thematic styling"
+            logger.info(f"Castle created with {thematic_style} thematic style: {style_info['name']}")
+        
+        return result
+        
     except Exception as e:
         logger.error(f"create_castle_fortress error: {e}")
+        return {"success": False, "message": str(e)}
+
+
+# Architectural Style Management Tools
+@mcp.tool()
+def list_architectural_styles() -> Dict[str, Any]:
+    """List all available architectural styles with their descriptions."""
+    try:
+        styles_info = {}
+        for style_name in list_available_styles():
+            styles_info[style_name] = get_style_info(style_name)
+        
+        return {
+            "success": True,
+            "styles": styles_info,
+            "style_count": len(styles_info),
+            "summary": get_style_summary()
+        }
+    except Exception as e:
+        logger.error(f"list_architectural_styles error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
+def get_architectural_style_info(style_name: str) -> Dict[str, Any]:
+    """Get detailed information about a specific architectural style."""
+    try:
+        style_info = get_style_info(style_name)
+        return {
+            "success": True,
+            "style": style_info,
+            "enhanced_description": get_style_description(style_name)
+        }
+    except Exception as e:
+        logger.error(f"get_architectural_style_info error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
+def enhance_building_prompt(
+    base_prompt: str,
+    architectural_style: str = "none",
+    additional_details: str = ""
+) -> Dict[str, Any]:
+    """Enhance a building prompt with architectural style descriptions and additional details."""
+    try:
+        enhanced_prompt = enhance_prompt_with_style(base_prompt, architectural_style)
+        
+        if additional_details:
+            enhanced_prompt += f"\nAdditional Details: {additional_details}"
+        
+        return {
+            "success": True,
+            "original_prompt": base_prompt,
+            "enhanced_prompt": enhanced_prompt,
+            "style_used": architectural_style,
+            "style_description": get_style_description(architectural_style) if architectural_style != "none" else "No style applied"
+        }
+    except Exception as e:
+        logger.error(f"enhance_building_prompt error: {e}")
         return {"success": False, "message": str(e)}
 
 

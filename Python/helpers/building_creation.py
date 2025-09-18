@@ -12,8 +12,8 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 logger = logging.getLogger(__name__)
 
 
-def _create_town_building(building_type: str, location: List[float], max_size: float, max_height: int, name_prefix: str, building_id: int) -> Dict[str, Any]:
-    """Create a single building with variety."""
+def _create_town_building(building_type: str, location: List[float], max_size: float, max_height: int, name_prefix: str, building_id: int, thematic_style: str = "none") -> Dict[str, Any]:
+    """Create a single building with variety, enhanced with thematic architectural styles."""
     try:
         import random
         
@@ -21,6 +21,13 @@ def _create_town_building(building_type: str, location: List[float], max_size: f
         import unreal_mcp_server_advanced as server
         construct_house = server.construct_house
         create_tower = server.create_tower
+        
+        # Import style functions if available
+        try:
+            from helpers.architectural_styles import get_style_description, get_style_info
+        except ImportError:
+            def get_style_description(style): return ""
+            def get_style_info(style): return {"name": "Default"}
         from helpers.advanced_buildings import (
             _create_skyscraper, _create_office_tower, _create_apartment_complex,
             _create_shopping_mall, _create_parking_garage, _create_hotel, 
@@ -45,7 +52,8 @@ def _create_town_building(building_type: str, location: List[float], max_size: f
                 height=height,
                 location=building_loc,
                 name_prefix=f"{name_prefix}_{building_id}",
-                house_style=random.choice(styles)
+                house_style=random.choice(styles),
+                architectural_style=thematic_style
             )
             
         elif building_type == "mansion":
@@ -55,7 +63,8 @@ def _create_town_building(building_type: str, location: List[float], max_size: f
                 height=random.randint(500, 700),
                 location=building_loc,
                 name_prefix=f"{name_prefix}_Mansion_{building_id}",
-                house_style="mansion"
+                house_style="mansion",
+                architectural_style=thematic_style
             )
             
         elif building_type == "tower":
@@ -170,7 +179,8 @@ def _create_town_building(building_type: str, location: List[float], max_size: f
                 height=random.randint(400, 600),
                 location=building_loc,
                 name_prefix=f"{name_prefix}_Commercial_{building_id}",
-                house_style="modern"
+                house_style="modern",
+                architectural_style=thematic_style
             )
         
         return result
