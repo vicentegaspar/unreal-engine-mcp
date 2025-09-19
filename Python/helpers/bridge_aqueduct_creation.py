@@ -199,10 +199,10 @@ def build_suspension_bridge_structure(
                 rotation = [angle, 0, 0]
             else:
                 dx = 0
-                dy = next_point[0] - point[0]  # Using X coordinate as Y
+                dy = next_point[0] - point[0]  # Span direction along Y-axis
                 cable_location = [
-                    point[0] + offset,
-                    (point[0] + next_point[0]) / 2,
+                    location_adjusted[0] + offset,  # Perpendicular to span (X-axis)
+                    (point[0] + next_point[0]) / 2,  # Along span (Y-axis) - using X from cable points
                     (point[2] + next_point[2]) / 2
                 ]
                 rotation = [0, angle, 0]
