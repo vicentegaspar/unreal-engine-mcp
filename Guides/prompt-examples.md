@@ -47,7 +47,6 @@ Real-world examples showing how natural language requests translate into MCP too
 1. create_maze(rows=15, cols=15, wall_height=3, cell_size=200, location=[0, 0, 0])
 2. delete_actor("MazeWall_7_14")   # Create second exit
 3. delete_actor("MazeWall_14_7")   # Create third exit  
-4. create_obstacle_course(checkpoints=3, spacing=300, location=[1500, 0, 0])  # Bonus area
 ```
 
 ## 🏙️ Urban Planning
@@ -91,7 +90,7 @@ Real-world examples showing how natural language requests translate into MCP too
 >
 > `create_town(town_size="metropolis", architectural_style="downtown", building_density=0.8, location=[3000, 0, 0])`
 >
-> *"Use construct_house() for custom districts and create_obstacle_course() for parks!"*
+> *"Use construct_house() for custom districts and create_maze() for parks!"*
 
 ### Collaborative World Building
 **User Prompt:** *"Have multiple AIs work together to build different districts of the same city"*
@@ -109,7 +108,6 @@ create_tower(height=15, base_size=5, tower_style="square", location=[200, 200, 0
 
 # AI 3: Entertainment District
 create_maze(rows=10, cols=10, location=[1000, 0, 0])
-create_obstacle_course(checkpoints=5, spacing=400, location=[1000, 1000, 0])
 ```
 
 ## 🎨 Creative Showcases
@@ -157,7 +155,6 @@ create_obstacle_course(checkpoints=5, spacing=400, location=[1000, 1000, 0])
 ```bash
 1. create_maze(rows=12, cols=12, wall_height=3, location=[0, 0, 0])          # Central maze
 2. create_town(town_size="small", location=[2000, 0, 0])                      # Safe zone
-3. create_obstacle_course(checkpoints=8, spacing=300, location=[-2000, 0, 0]) # Challenge area
 ```
 
 **Phase 2: Interactive Elements**
@@ -219,7 +216,6 @@ spawn_actor(name="Snow2", type="StaticMeshActor", location=[200, 150, 25])
 ```bash
 # Adventure Zone
 1. create_maze(rows=8, cols=8, wall_height=2, location=[-1000, 0, 0])
-2. create_obstacle_course(checkpoints=6, spacing=250, location=[-1000, 1000, 0])
 
 # Fantasy Zone  
 3. construct_house(house_style="cottage", location=[0, 0, 0])        # Fairy tale house

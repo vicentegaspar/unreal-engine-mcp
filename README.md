@@ -47,11 +47,12 @@ Check out these examples of the MCP server in action on our channel:
 
 | **Category** | **Tools** | **Description** |
 |--------------|-----------|-----------------|
-| **World Building** | `create_town`, `construct_house`, `create_tower`, `create_arch` | Build complex architectural structures and entire settlements |
-| **Level Design** | `create_maze`, `create_obstacle_course`, `create_pyramid`, `create_wall` | Design challenging game levels and puzzles |
-| **Physics & Materials** | `spawn_physics_blueprint_actor `, `set_physics_properties` | Create realistic physics simulations |
-| **Blueprint System** | `create_blueprint`, `compile_blueprint`, `add_component_to_blueprint` | Visual scripting and custom actor creation |
-| **Actor Management** | `spawn_actor`, `delete_actor`, `set_actor_transform`, `find_actors_by_name` | Precise control over scene objects |
+| **World Building** | `create_town`, `construct_house`, `construct_mansion`, `create_tower`, `create_arch`, `create_staircase` | Build complex architectural structures and entire settlements |
+| **Epic Structures** | `create_castle_fortress`, `create_suspension_bridge`, `create_aqueduct` | Massive engineering marvels and medieval fortresses |
+| **Level Design** | `create_maze`, `create_pyramid`, `create_wall` | Design challenging game levels and puzzles |
+| **Physics & Materials** | `spawn_physics_blueprint_actor`, `set_physics_properties`, `get_available_materials`, `apply_material_to_actor`, `apply_material_to_blueprint`, `set_mesh_material_color` | Create realistic physics simulations and material systems |
+| **Blueprint System** | `create_blueprint`, `compile_blueprint`, `add_component_to_blueprint`, `set_static_mesh_properties` | Visual scripting and custom actor creation |
+| **Actor Management** | `get_actors_in_level`, `find_actors_by_name`, `delete_actor`, `set_actor_transform`, `get_actor_material_info` | Precise control over scene objects and inspection |
 
 ---
 

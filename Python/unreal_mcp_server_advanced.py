@@ -36,6 +36,9 @@ from helpers.actor_utilities import spawn_blueprint_actor, get_blueprint_materia
 from helpers.actor_name_manager import (
     safe_spawn_actor, safe_delete_actor
 )
+from helpers.bridge_aqueduct_creation import (
+    build_suspension_bridge_structure, build_aqueduct_structure
+)
 
 # Configure logging with more detailed format
 logging.basicConfig(
@@ -992,36 +995,6 @@ def create_maze(
         return {"success": False, "message": str(e)}
 
 @mcp.tool()
-def create_obstacle_course(
-    checkpoints: int = 5,
-    spacing: float = 500.0,
-    location: List[float] = [0.0, 0.0, 0.0]
-) -> Dict[str, Any]:
-    """Create a simple obstacle course of pillars."""
-    try:
-        unreal = get_unreal_connection()
-        if not unreal:
-            return {"success": False, "message": "Failed to connect to Unreal Engine"}
-        spawned = []
-        for i in range(checkpoints):
-            actor_name = f"Obstacle_{i}"
-            loc = [location[0] + i * spacing, location[1], location[2]]
-            params = {
-                "name": actor_name,
-                "type": "StaticMeshActor",
-                "location": loc,
-                "static_mesh": "/Engine/BasicShapes/Cylinder.Cylinder"
-            }
-            resp = safe_spawn_actor(unreal, params)
-            if resp and resp.get("status") == "success":
-                spawned.append(resp)
-        return {"success": True, "actors": spawned}
-    except Exception as e:
-        logger.error(f"create_obstacle_course error: {e}")
-        return {"success": False, "message": str(e)}
-
-
-@mcp.tool()
 def get_available_materials(
     search_path: str = "/Game/",
     include_engine_materials: bool = True
@@ -1402,6 +1375,262 @@ def create_castle_fortress(
         
     except Exception as e:
         logger.error(f"create_castle_fortress error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
+def create_suspension_bridge(
+    span_length: float = 6000.0,
+    deck_width: float = 800.0,
+    tower_height: float = 4000.0,
+    cable_sag_ratio: float = 0.12,
+    module_size: float = 200.0,
+    location: List[float] = [0.0, 0.0, 0.0],
+    orientation: str = "x",
+    name_prefix: str = "Bridge",
+    deck_mesh: str = "/Engine/BasicShapes/Cube.Cube",
+    tower_mesh: str = "/Engine/BasicShapes/Cube.Cube",
+    cable_mesh: str = "/Engine/BasicShapes/Cylinder.Cylinder",
+    suspender_mesh: str = "/Engine/BasicShapes/Cylinder.Cylinder",
+    dry_run: bool = False
+) -> Dict[str, Any]:
+    """
+    Build a suspension bridge with towers, deck, cables, and suspenders.
+    
+    Creates a realistic suspension bridge with parabolic main cables, vertical
+    suspenders, twin towers, and a multi-lane deck. Perfect for dramatic reveals
+    showing engineering marvels.
+    
+    Args:
+        span_length: Total span between towers
+        deck_width: Width of the bridge deck
+        tower_height: Height of support towers
+        cable_sag_ratio: Sag as fraction of span (0.1-0.15 typical)
+        module_size: Resolution for segments (affects actor count)
+        location: Center point of the bridge
+        orientation: "x" or "y" for bridge direction
+        name_prefix: Prefix for all spawned actors
+        deck_mesh: Mesh for deck segments
+        tower_mesh: Mesh for tower components
+        cable_mesh: Mesh for cable segments
+        suspender_mesh: Mesh for vertical suspenders
+        dry_run: If True, calculate metrics without spawning
+    
+    Returns:
+        Dictionary with success status, spawned actors, and performance metrics
+    """
+    try:
+        import time
+        start_time = time.perf_counter()
+        
+        unreal = get_unreal_connection()
+        if not unreal:
+            return {"success": False, "message": "Failed to connect to Unreal Engine"}
+        
+        logger.info(f"Creating suspension bridge: span={span_length}, width={deck_width}, height={tower_height}")
+        
+        all_actors = []
+        
+        # Calculate expected actor counts for dry run
+        if dry_run:
+            expected_towers = 10  # 2 towers with main, base, top, and 2 attachment points each
+            expected_deck = max(1, int(span_length / module_size)) * max(1, int(deck_width / module_size))
+            expected_cables = 2 * max(1, int(span_length / module_size))  # 2 main cables
+            expected_suspenders = 2 * max(1, int(span_length / (module_size * 3)))  # Every 3 modules
+            
+            elapsed_ms = int((time.perf_counter() - start_time) * 1000)
+            
+            return {
+                "success": True,
+                "dry_run": True,
+                "metrics": {
+                    "total_actors": expected_towers + expected_deck + expected_cables + expected_suspenders,
+                    "deck_segments": expected_deck,
+                    "cable_segments": expected_cables,
+                    "suspender_count": expected_suspenders,
+                    "towers": expected_towers,
+                    "span_length": span_length,
+                    "deck_width": deck_width,
+                    "est_area": span_length * deck_width,
+                    "elapsed_ms": elapsed_ms
+                }
+            }
+        
+        # Build the bridge structure
+        counts = build_suspension_bridge_structure(
+            unreal,
+            span_length,
+            deck_width,
+            tower_height,
+            cable_sag_ratio,
+            module_size,
+            location,
+            orientation,
+            name_prefix,
+            deck_mesh,
+            tower_mesh,
+            cable_mesh,
+            suspender_mesh,
+            all_actors
+        )
+        
+        # Calculate metrics
+        elapsed_ms = int((time.perf_counter() - start_time) * 1000)
+        total_actors = sum(counts.values())
+        
+        logger.info(f"Bridge construction complete: {total_actors} actors in {elapsed_ms}ms")
+        
+        return {
+            "success": True,
+            "message": f"Created suspension bridge with {total_actors} components",
+            "actors": all_actors,
+            "metrics": {
+                "total_actors": total_actors,
+                "deck_segments": counts["deck_segments"],
+                "cable_segments": counts["cable_segments"],
+                "suspender_count": counts["suspenders"],
+                "towers": counts["towers"],
+                "span_length": span_length,
+                "deck_width": deck_width,
+                "est_area": span_length * deck_width,
+                "elapsed_ms": elapsed_ms
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"create_suspension_bridge error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
+def create_aqueduct(
+    arches: int = 18,
+    arch_radius: float = 600.0,
+    pier_width: float = 200.0,
+    tiers: int = 2,
+    deck_width: float = 600.0,
+    module_size: float = 200.0,
+    location: List[float] = [0.0, 0.0, 0.0],
+    orientation: str = "x",
+    name_prefix: str = "Aqueduct",
+    arch_mesh: str = "/Engine/BasicShapes/Cylinder.Cylinder",
+    pier_mesh: str = "/Engine/BasicShapes/Cube.Cube",
+    deck_mesh: str = "/Engine/BasicShapes/Cube.Cube",
+    dry_run: bool = False
+) -> Dict[str, Any]:
+    """
+    Build a multi-tier Roman-style aqueduct with arches and water channel.
+    
+    Creates a majestic aqueduct with repeating arches, support piers, and
+    a water channel deck. Each tier has progressively smaller piers for
+    realistic tapering. Perfect for showing ancient engineering.
+    
+    Args:
+        arches: Number of arches per tier
+        arch_radius: Radius of each arch
+        pier_width: Width of support piers
+        tiers: Number of vertical tiers (1-3 recommended)
+        deck_width: Width of the water channel
+        module_size: Resolution for segments (affects actor count)
+        location: Starting point of the aqueduct
+        orientation: "x" or "y" for aqueduct direction
+        name_prefix: Prefix for all spawned actors
+        arch_mesh: Mesh for arch segments (cylinder)
+        pier_mesh: Mesh for support piers
+        deck_mesh: Mesh for deck and walls
+        dry_run: If True, calculate metrics without spawning
+    
+    Returns:
+        Dictionary with success status, spawned actors, and performance metrics
+    """
+    try:
+        import time
+        start_time = time.perf_counter()
+        
+        unreal = get_unreal_connection()
+        if not unreal:
+            return {"success": False, "message": "Failed to connect to Unreal Engine"}
+        
+        logger.info(f"Creating aqueduct: {arches} arches, {tiers} tiers, radius={arch_radius}")
+        
+        all_actors = []
+        
+        # Calculate dimensions
+        total_length = arches * (2 * arch_radius + pier_width) + pier_width
+        
+        # Calculate expected actor counts for dry run
+        if dry_run:
+            # Arch segments per arch based on semicircle circumference
+            arch_circumference = math.pi * arch_radius
+            segments_per_arch = max(4, int(arch_circumference / module_size))
+            expected_arch_segments = tiers * arches * segments_per_arch
+            
+            # Piers: (arches + 1) per tier
+            expected_piers = tiers * (arches + 1)
+            
+            # Deck segments including side walls
+            deck_length_segments = max(1, int(total_length / module_size))
+            deck_width_segments = max(1, int(deck_width / module_size))
+            expected_deck = deck_length_segments * deck_width_segments
+            expected_deck += 2 * deck_length_segments  # Side walls
+            
+            elapsed_ms = int((time.perf_counter() - start_time) * 1000)
+            
+            return {
+                "success": True,
+                "dry_run": True,
+                "metrics": {
+                    "total_actors": expected_arch_segments + expected_piers + expected_deck,
+                    "arch_segments": expected_arch_segments,
+                    "pier_count": expected_piers,
+                    "tiers": tiers,
+                    "deck_segments": expected_deck,
+                    "total_length": total_length,
+                    "est_area": total_length * deck_width,
+                    "elapsed_ms": elapsed_ms
+                }
+            }
+        
+        # Build the aqueduct structure
+        counts = build_aqueduct_structure(
+            unreal,
+            arches,
+            arch_radius,
+            pier_width,
+            tiers,
+            deck_width,
+            module_size,
+            location,
+            orientation,
+            name_prefix,
+            arch_mesh,
+            pier_mesh,
+            deck_mesh,
+            all_actors
+        )
+        
+        # Calculate metrics
+        elapsed_ms = int((time.perf_counter() - start_time) * 1000)
+        total_actors = sum(counts.values())
+        
+        logger.info(f"Aqueduct construction complete: {total_actors} actors in {elapsed_ms}ms")
+        
+        return {
+            "success": True,
+            "message": f"Created {tiers}-tier aqueduct with {arches} arches ({total_actors} components)",
+            "actors": all_actors,
+            "metrics": {
+                "total_actors": total_actors,
+                "arch_segments": counts["arch_segments"],
+                "pier_count": counts["piers"],
+                "tiers": tiers,
+                "deck_segments": counts["deck_segments"],
+                "total_length": total_length,
+                "est_area": total_length * deck_width,
+                "elapsed_ms": elapsed_ms
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"create_aqueduct error: {e}")
         return {"success": False, "message": str(e)}
 
 
