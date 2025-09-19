@@ -10,6 +10,7 @@
 #include "Interfaces/IPv4/IPv4Endpoint.h"
 #include "Commands/EpicUnrealMCPEditorCommands.h"
 #include "Commands/EpicUnrealMCPBlueprintCommands.h"
+#include "Commands/EpicUnrealMCPBiomeCommands.h"
 #include "EpicUnrealMCPBridge.generated.h"
 
 class FMCPServerRunnable;
@@ -55,4 +56,5 @@ private:
 	// Command handler instances
 	TSharedPtr<FEpicUnrealMCPEditorCommands> EditorCommands;
 	TSharedPtr<FEpicUnrealMCPBlueprintCommands> BlueprintCommands;
+	TSharedPtr<FEpicUnrealMCPBiomeCommands> BiomeCommands;
 }; 

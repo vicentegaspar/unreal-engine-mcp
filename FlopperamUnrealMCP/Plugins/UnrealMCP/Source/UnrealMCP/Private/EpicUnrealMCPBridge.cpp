@@ -53,6 +53,7 @@
 // Include our new command handler classes
 #include "Commands/EpicUnrealMCPEditorCommands.h"
 #include "Commands/EpicUnrealMCPBlueprintCommands.h"
+#include "Commands/EpicUnrealMCPBiomeCommands.h"
 #include "Commands/EpicUnrealMCPCommonUtils.h"
 
 // Default settings
@@ -63,12 +64,14 @@ UEpicUnrealMCPBridge::UEpicUnrealMCPBridge()
 {
     EditorCommands = MakeShared<FEpicUnrealMCPEditorCommands>();
     BlueprintCommands = MakeShared<FEpicUnrealMCPBlueprintCommands>();
+    BiomeCommands = MakeShared<FEpicUnrealMCPBiomeCommands>();
 }
 
 UEpicUnrealMCPBridge::~UEpicUnrealMCPBridge()
 {
     EditorCommands.Reset();
     BlueprintCommands.Reset();
+    BiomeCommands.Reset();
 }
 
 // Initialize subsystem
@@ -237,6 +240,20 @@ FString UEpicUnrealMCPBridge::ExecuteCommand(const FString& CommandType, const T
                      CommandType == TEXT("get_actor_material_info"))
             {
                 ResultJson = BlueprintCommands->HandleCommand(CommandType, Params);
+            }
+            // Biome Commands
+            else if (CommandType == TEXT("generate_biome") ||
+                     CommandType == TEXT("create_landscape") ||
+                     CommandType == TEXT("generate_heightmap") ||
+                     CommandType == TEXT("paint_landscape_material") ||
+                     CommandType == TEXT("create_landscape_layer") ||
+                     CommandType == TEXT("spawn_foliage") ||
+                     CommandType == TEXT("create_foliage_type") ||
+                     CommandType == TEXT("setup_procedural_foliage") ||
+                     CommandType == TEXT("paint_foliage") ||
+                     CommandType == TEXT("create_biome_blueprint"))
+            {
+                ResultJson = BiomeCommands->HandleCommand(CommandType, Params);
             }
 
             else

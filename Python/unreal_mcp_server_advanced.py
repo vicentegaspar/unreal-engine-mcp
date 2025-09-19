@@ -41,6 +41,11 @@ from helpers.architectural_styles import (
     get_style_colors, list_available_styles, get_style_info,
     enhance_prompt_with_style, get_style_summary, ARCHITECTURAL_STYLES
 )
+from helpers.biome_generation import generate_biome
+from helpers.biome_definitions import (
+    get_biome_definition, list_available_biomes, get_biome_summary,
+    validate_biome_size, get_biome_size_range
+)
 
 # Configure logging with more detailed format
 logging.basicConfig(
@@ -259,7 +264,7 @@ async def server_lifespan(server: FastMCP) -> AsyncIterator[Dict[str, Any]]:
 # Initialize server
 mcp = FastMCP(
     "UnrealMCP_Advanced",
-    description="Unreal Engine Advanced Tools - Streamlined MCP server for advanced composition and building tools",
+    description="Unreal Engine Advanced Tools - Streamlined MCP server for advanced composition, building tools, and biome generation (3-5km landscapes)",
     lifespan=server_lifespan
 )
 
@@ -1443,6 +1448,257 @@ def create_castle_fortress(
         logger.error(f"create_castle_fortress error: {e}")
         return {"success": False, "message": str(e)}
 
+
+# Biome Generation Tools
+@mcp.tool()
+def generate_biome_environment(
+    biome_type: str,
+    location: List[float] = [0.0, 0.0, 0.0],
+    size: int = 400000,  # 4km default
+    name_prefix: str = "BiomeGenerated",
+    custom_settings: Dict[str, Any] = {}
+) -> Dict[str, Any]:
+    """
+    Generate a complete biome environment with procedural landscape, foliage, and features.
+    
+    Creates large-scale biomes (3-5km) using Unreal Engine's landscape editor, procedural foliage,
+    and world generation systems. Each biome includes terrain generation, material painting,
+    vegetation placement, and special environmental features.
+    
+    Available biome types:
+    - desert: Dryland with dunes and oasis areas
+    - plateau: Large flat-topped mountain with low grass and rocks  
+    - dense_jungle: Tree-dense jungle with bushes, rocks and caves
+    - riverside: Green lush river bed with lots of vegetation
+    - tundra: Large snowy land with rocks and frozen lakes
+    - volcano: Infernal scorched earth with burned trees and lava
+    - marsh: Rich wetland with knee-deep water and spaced trees
+    - mushroom_kingdom: Fantastical landscape filled with mushrooms
+    - crystal_caverns: Underground world of glowing crystal formations
+    - floating_islands: Mystical floating landmasses with energy bridges
+    - bioluminescent_forest: Magical forest with natural bioluminescence
+    - mechanical_wasteland: Post-apocalyptic landscape of rusted machinery
+    - coral_reef: Underwater paradise with vibrant coral formations
+    
+    Args:
+        biome_type: Type of biome to generate (see available types above)
+        location: [X, Y, Z] world position for biome center
+        size: Biome size in centimeters (300000-500000, i.e., 3km-5km)
+        name_prefix: Prefix for generated landscape and assets
+        custom_settings: Override biome parameters (optional)
+    
+    Returns:
+        Complete biome generation results with statistics and asset information
+    """
+    try:
+        unreal = get_unreal_connection()
+        if not unreal:
+            return {"success": False, "message": "Failed to connect to Unreal Engine"}
+        
+        # Validate inputs
+        if not validate_biome_size(size):
+            min_km, max_km = get_biome_size_range()
+            return {
+                "success": False, 
+                "message": f"Biome size must be between {min_km/100000}km and {max_km/100000}km"
+            }
+        
+        # Check if biome type exists
+        biome_def = get_biome_definition(biome_type)
+        if not biome_def:
+            available_biomes = list_available_biomes()
+            return {
+                "success": False, 
+                "message": f"Unknown biome type '{biome_type}'. Available types: {', '.join(available_biomes)}"
+            }
+        
+        logger.info(f"Starting biome generation: {biome_type} at {location}, size: {size/100000}km")
+        
+        # Generate the biome using the helper function
+        result = generate_biome(
+            unreal_connection=unreal,
+            biome_type=biome_type,
+            location=location,
+            size=size,
+            name_prefix=name_prefix,
+            custom_params=custom_settings
+        )
+        
+        # Add biome type info to result
+        if result.get("success"):
+            result["biome_description"] = biome_def.description
+            result["biome_features"] = len(biome_def.special_features)
+            result["foliage_species"] = len(biome_def.foliage_config["species"])
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"generate_biome_environment error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
+def list_available_biomes() -> Dict[str, Any]:
+    """List all available biome types with their descriptions and characteristics."""
+    try:
+        biome_summary = get_biome_summary()
+        available_biomes = list_available_biomes()
+        
+        biome_details = {}
+        for biome_name in available_biomes:
+            biome_def = get_biome_definition(biome_name)
+            if biome_def:
+                biome_details[biome_name] = {
+                    "name": biome_def.name,
+                    "description": biome_def.description,
+                    "special_features": len(biome_def.special_features),
+                    "foliage_species": len(biome_def.foliage_config["species"]),
+                    "density_multiplier": biome_def.foliage_config.get("density_multiplier", 1.0),
+                    "environment_type": biome_def.environment_settings.get("weather", {}).get("temperature", "unknown")
+                }
+        
+        return {
+            "success": True,
+            "available_biomes": biome_details,
+            "total_biomes": len(biome_details),
+            "size_constraints": {
+                "min_size_km": 3.0,
+                "max_size_km": 5.0,
+                "default_size_km": 4.0
+            },
+            "summary": biome_summary
+        }
+        
+    except Exception as e:
+        logger.error(f"list_available_biomes error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()
+def get_biome_details(biome_type: str) -> Dict[str, Any]:
+    """Get detailed information about a specific biome type including all parameters."""
+    try:
+        biome_def = get_biome_definition(biome_type)
+        if not biome_def:
+            available_biomes = list_available_biomes()
+            return {
+                "success": False,
+                "message": f"Unknown biome type '{biome_type}'. Available: {', '.join(available_biomes)}"
+            }
+        
+        return {
+            "success": True,
+            "biome_type": biome_type,
+            "name": biome_def.name,
+            "description": biome_def.description,
+            "landscape_parameters": {
+                "heightmap_scale": biome_def.landscape_params.get("heightmap_scale"),
+                "noise_settings": biome_def.landscape_params.get("noise_settings"),
+                "materials": biome_def.landscape_params.get("materials"),
+                "slope_settings": biome_def.landscape_params.get("slope_settings")
+            },
+            "foliage_configuration": {
+                "density_multiplier": biome_def.foliage_config.get("density_multiplier"),
+                "species_count": len(biome_def.foliage_config.get("species", [])),
+                "species_details": biome_def.foliage_config.get("species"),
+                "distribution_pattern": biome_def.foliage_config.get("distribution_pattern")
+            },
+            "environment_settings": biome_def.environment_settings,
+            "special_features": {
+                "feature_count": len(biome_def.special_features),
+                "features": biome_def.special_features
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"get_biome_details error: {e}")
+        return {"success": False, "message": str(e)}
+
+@mcp.tool()  
+def create_custom_landscape(
+    location: List[float] = [0.0, 0.0, 0.0],
+    size_km: float = 4.0,
+    component_count: int = None,
+    heightmap_settings: Dict[str, Any] = {},
+    name_prefix: str = "CustomLandscape"
+) -> Dict[str, Any]:
+    """
+    Create a custom landscape without biome-specific features.
+    
+    This tool creates just the base landscape terrain that can be manually customized.
+    Use generate_biome_environment for complete biome generation with foliage and features.
+    
+    Args:
+        location: [X, Y, Z] world position for landscape center
+        size_km: Landscape size in kilometers (3.0-5.0)
+        component_count: Number of landscape components (auto-calculated if None)
+        heightmap_settings: Custom noise parameters for terrain generation
+        name_prefix: Name prefix for the landscape actor
+    
+    Returns:
+        Landscape creation results with technical details
+    """
+    try:
+        unreal = get_unreal_connection()
+        if not unreal:
+            return {"success": False, "message": "Failed to connect to Unreal Engine"}
+        
+        # Convert km to cm and validate
+        size_cm = int(size_km * 100000)
+        if not validate_biome_size(size_cm):
+            return {
+                "success": False,
+                "message": f"Landscape size must be between 3.0km and 5.0km"
+            }
+        
+        # Calculate component count if not specified
+        if component_count is None:
+            component_size_cm = 50900  # Roughly 509m per component
+            component_count = max(4, min(32, math.ceil(size_cm / component_size_cm)))
+            if component_count % 2 != 0:
+                component_count += 1
+        
+        # Create landscape
+        landscape_params = {
+            "location": location,
+            "component_count_x": component_count,
+            "component_count_y": component_count,
+            "quads_per_component": 63,
+            "subsection_size_quads": 31
+        }
+        
+        response = unreal.send_command("create_landscape", landscape_params)
+        
+        if not response or response.get("status") != "success":
+            error_msg = response.get("error", "Unknown error") if response else "No response"
+            return {"success": False, "message": f"Failed to create landscape: {error_msg}"}
+        
+        landscape_name = response.get("landscape_name")
+        
+        # Apply heightmap if settings provided
+        heightmap_applied = False
+        if heightmap_settings:
+            heightmap_params = {
+                "landscape_name": landscape_name,
+                "noise_settings": heightmap_settings
+            }
+            
+            heightmap_response = unreal.send_command("generate_heightmap", heightmap_params)
+            heightmap_applied = heightmap_response and heightmap_response.get("status") == "success"
+        
+        return {
+            "success": True,
+            "landscape_name": landscape_name,
+            "size_km": size_km,
+            "size_x": response.get("size_x"),
+            "size_y": response.get("size_y"), 
+            "component_count": component_count,
+            "heightmap_applied": heightmap_applied,
+            "location": location,
+            "message": f"Custom landscape '{landscape_name}' created successfully ({size_km}km)"
+        }
+        
+    except Exception as e:
+        logger.error(f"create_custom_landscape error: {e}")
+        return {"success": False, "message": str(e)}
 
 # Architectural Style Management Tools
 @mcp.tool()

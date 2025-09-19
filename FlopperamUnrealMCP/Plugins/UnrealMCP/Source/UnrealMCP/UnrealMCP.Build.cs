@@ -35,7 +35,10 @@ public class UnrealMCP : ModuleRules
 				"Json",
 				"JsonUtilities",
 				"DeveloperSettings",
-				"PhysicsCore"
+				"PhysicsCore",
+				"Landscape",
+				"Foliage",
+				"ProceduralFoliage"
 			}
 		);
 		
@@ -51,7 +54,14 @@ public class UnrealMCP : ModuleRules
 				"KismetCompiler",
 				"BlueprintGraph",
 				"Projects",
-				"AssetRegistry"
+				"AssetRegistry",
+				"LandscapeEditor",
+				"FoliageEdit",
+				"WorldBrowser",
+				"EditorWidgets",
+				"RenderCore",
+				"ImageWrapper",
+				"RawMesh"
 			}
 		);
 		
