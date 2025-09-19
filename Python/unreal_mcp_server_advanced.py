@@ -1535,9 +1535,9 @@ def create_suspension_bridge(
         # Calculate expected actor counts for dry run
         if dry_run:
             expected_towers = 10  # 2 towers with main, base, top, and 2 attachment points each
-            expected_deck = int(span_length / module_size) * int(deck_width / module_size)
-            expected_cables = 2 * int(span_length / module_size)  # 2 main cables
-            expected_suspenders = 2 * int(span_length / (module_size * 3))  # Every 3 modules
+            expected_deck = max(1, int(span_length / module_size)) * max(1, int(deck_width / module_size))
+            expected_cables = 2 * max(1, int(span_length / module_size))  # 2 main cables
+            expected_suspenders = 2 * max(1, int(span_length / (module_size * 3)))  # Every 3 modules
             
             elapsed_ms = int((time.perf_counter() - start_time) * 1000)
             
@@ -1669,8 +1669,8 @@ def create_aqueduct(
             expected_piers = tiers * (arches + 1)
             
             # Deck segments including side walls
-            deck_length_segments = int(total_length / module_size)
-            deck_width_segments = int(deck_width / module_size)
+            deck_length_segments = max(1, int(total_length / module_size))
+            deck_width_segments = max(1, int(deck_width / module_size))
             expected_deck = deck_length_segments * deck_width_segments
             expected_deck += 2 * deck_length_segments  # Side walls
             
